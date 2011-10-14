@@ -34,4 +34,24 @@ class CalendarValidationRuleBehavior extends ModelBehavior {
         }
         return true;
     }
+
+    /**
+     * checkByDay
+     * rrule_bydayのチェック
+     *
+     * @param  &$model
+     * @return
+     */
+    function checkByDay(&$model, $fields){
+        $byday = explode(',', array_shift($fields));
+        if (!empty($byday) && $model->data[$model->alias]['rrule_freq'] === 'daily') {
+            return false;
+        }
+        foreach ($byday as $value) {
+            if (!in_array($value, array('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'))) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -42,6 +42,10 @@ class Vevent extends CalendarAppModel {
                                                                            'rule' => array('exclusiveRrule'),
                                                                            'allowEmpty' => true,
                                                                            )),
+                          'rrule_byday' => array('checkByDay' => array(
+                                                                       'rule' => array('checkByDay'),
+                                                                       'allowEmpty' => true,
+                                                                       )),
                           );
 
     /**
@@ -220,6 +224,7 @@ class Vevent extends CalendarAppModel {
     function _expandEvents($start, $end, $event){
         $events = array();
         $freq = $event['Vevent']['rrule_freq'];
+        $byday = $event['Vevent']['rrule_byday'];
         switch($freq) {
         case 'daily':
             $events = $this->_expandEventsDaily($start, $end, $event);
@@ -282,18 +287,20 @@ class Vevent extends CalendarAppModel {
         $events = array();
         $s = $expandStartPoint;
         $e = $expandEndPoint;
+
         if(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
             $events[] = $event['Vevent'];
         }
-        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) <= mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+
             $events[] = $event['Vevent'];
+
             $s['day'] += 1 * $interval;
         }
-
         return $events;
     }
 
@@ -307,6 +314,7 @@ class Vevent extends CalendarAppModel {
         $eventStart = $event['Vevent']['dtstart'];
         $eventEnd = $event['Vevent']['dtend'];
         $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
+        $byday = empty($event['Vevent']['rrule_byday']) ? null : explode(',', $event['Vevent']['rrule_byday']);
 
         $expandStartPoint; // 登録するイベント群の開始日時
         $expandEndPoint;
@@ -341,16 +349,91 @@ class Vevent extends CalendarAppModel {
         $events = array();
         $s = $expandStartPoint;
         $e = $expandEndPoint;
+        $first = true;
         if (mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
             $events[] = $event['Vevent'];
+            $first = false;
         }
+
         while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
-            $events[] = $event['Vevent'];
+            $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']))), 0, 2);
+
+            if ($byday) {
+                if (!$first || in_array($strW, $byday)) {
+                    $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+                    $day = $s['day'];
+                    if ($w === 6) {
+                        $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
+                        if (in_array($strW, $byday)) {
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']) + $eventDiff);
+                            $events[] = $event['Vevent'];
+                        }
+                        $day++;
+                        $w = 0;
+                    }
+                    if ($w != 0) {
+                        $day -= $w;
+                    }
+                    while($w < 6) {
+                        $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
+                        if (in_array($strW, $byday)) {
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']) + $eventDiff);
+                            $events[] = $event['Vevent'];
+                        }
+                        $day++;
+                        $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                    }
+                } else {
+                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+                    $events[] = $event['Vevent'];
+
+                    $day = $s['day'];
+                    $day++;
+                    $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+
+                    if ($w === 6) {
+                        $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
+                        if (in_array($strW, $byday)) {
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']) + $eventDiff);
+                            $events[] = $event['Vevent'];
+                        }
+                        $day++;
+                        $w = 0;
+                    }
+                    /*
+                    if ($w != 0) {
+                        $day -= $w;
+                    }
+                    */
+                    while($w < 6) {
+                        $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
+                        if (in_array($strW, $byday)) {
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']) + $eventDiff);
+                            $events[] = $event['Vevent'];
+                        }
+                        $day++;
+                        $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                    }
+                }
+            } else {
+                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+                $events[] = $event['Vevent'];
+            }
             $s['day'] += 7 * $interval;
+            $first = false;
+        }
+
+        if (!empty($event['Vevent']['rrule_count'])) {
+            // @todo refactor code
+            return array_slice($events, 0, $event['Vevent']['rrule_count']);
         }
 
         return $events;
