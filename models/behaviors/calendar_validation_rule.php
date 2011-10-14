@@ -22,12 +22,16 @@ class CalendarValidationRuleBehavior extends ModelBehavior {
     }
 
     /**
-     * checkFreq
+     * exclusiveRrule
      *
-     * jpn: rrule_freqに設定される値チェック
+     * jpn: rrule_*の排他チェック
      * @return Boolean
      */
-    function checkFreq(&$model, $fields){
-        
+    function exclusiveRrule(&$model, $fields){
+        if (!empty($model->data[$model->alias]['rrule_count'])
+            && !empty($model->data[$model->alias]['rrule_until'])) {
+            return false;
+        }
+        return true;
     }
 }

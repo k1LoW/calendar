@@ -32,7 +32,16 @@ class Vevent extends CalendarAppModel {
                           'rrule_freq' => array('inListFreq' => array(
                                                                       'rule' => array('inList', array('daily', 'weekly', 'monthly', 'yearly')),
                                                                       'allowEmpty' => true,
-                                                                      )),
+                                                                      ),
+                                                ),
+                          'rrule_count' => array('exclusiveRrule' => array(
+                                                                           'rule' => array('exclusiveRrule'),
+                                                                           'allowEmpty' => true,
+                                                                           )),
+                          'rrule_until' => array('exclusiveRrule' => array(
+                                                                           'rule' => array('exclusiveRrule'),
+                                                                           'allowEmpty' => true,
+                                                                           )),
                           );
 
     /**
@@ -249,17 +258,24 @@ class Vevent extends CalendarAppModel {
             $expandStartPoint = $this->_expandDate($eventStart);
         }
 
-        if (empty($event['Vevent']['rrule_count'])) {
-            $expandEndPoint = $this->_expandDate($end);
-        } else {
+        if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
             $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + $count, $s['year']);
-            if (strtotime($eventEnd) < strtotime($endPoint)) {
-                $expandEndPoint = $this->_expandDate($eventEnd);
+            if (strtotime($end) < $endPoint) {
+                $expandEndPoint = $this->_expandDate($end);
             } else {
                 $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
             }
+        } elseif (!empty($event['Vevent']['rrule_until'])) {
+            $endPoint = strtotime($event['Vevent']['rrule_until']);
+            if (strtotime($end) < $endPoint) {
+                $expandEndPoint = $this->_expandDate($end);
+            } else {
+                $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
+            }
+        } else {
+            $expandEndPoint = $this->_expandDate($end);
         }
 
         $events = array();
@@ -300,17 +316,24 @@ class Vevent extends CalendarAppModel {
             $expandStartPoint = $this->_expandDate($eventStart);
         }
 
-        if (empty($event['Vevent']['rrule_count'])) {
-            $expandEndPoint = $this->_expandDate($end);
-        } else {
+        if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
             $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + ($count * 7), $s['year']);
-            if (strtotime($eventEnd) < strtotime($endPoint)) {
-                $expandEndPoint = $this->_expandDate($eventEnd);
+            if (strtotime($end) < $endPoint) {
+                $expandEndPoint = $this->_expandDate($end);
             } else {
                 $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
             }
+        } elseif (!empty($event['Vevent']['rrule_until'])) {
+            $endPoint = strtotime($event['Vevent']['rrule_until']);
+            if (strtotime($end) < $endPoint) {
+                $expandEndPoint = $this->_expandDate($end);
+            } else {
+                $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
+            }
+        } else {
+            $expandEndPoint = $this->_expandDate($end);
         }
 
         $events = array();
@@ -352,17 +375,17 @@ class Vevent extends CalendarAppModel {
             $expandStartPoint = $this->_expandDate($eventStart);
         }
 
-        if (empty($event['Vevent']['rrule_count'])) {
-            $expandEndPoint = $this->_expandDate($end);
-        } else {
+        if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
             $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'] + $count, $s['day'], $s['year']);
-            if (strtotime($eventEnd) < strtotime($endPoint)) {
-                $expandEndPoint = $this->_expandDate($eventEnd);
+            if (strtotime($end) < $endPoint) {
+                $expandEndPoint = $this->_expandDate($end);
             } else {
                 $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
             }
+        } else {
+            $expandEndPoint = $this->_expandDate($end);
         }
 
         $events = array();
@@ -404,17 +427,24 @@ class Vevent extends CalendarAppModel {
             $expandStartPoint = $this->_expandDate($eventStart);
         }
 
-        if (empty($event['Vevent']['rrule_count'])) {
-            $expandEndPoint = $this->_expandDate($end);
-        } else {
+        if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
             $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year'] + $count);
-            if (strtotime($eventEnd) < strtotime($endPoint)) {
-                $expandEndPoint = $this->_expandDate($eventEnd);
+            if (strtotime($end) < $endPoint) {
+                $expandEndPoint = $this->_expandDate($end);
             } else {
                 $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
             }
+        } elseif (!empty($event['Vevent']['rrule_until'])) {
+            $endPoint = strtotime($event['Vevent']['rrule_until']);
+            if (strtotime($end) < $endPoint) {
+                $expandEndPoint = $this->_expandDate($end);
+            } else {
+                $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
+            }
+        } else {
+            $expandEndPoint = $this->_expandDate($end);
         }
 
         $events = array();
