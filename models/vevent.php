@@ -45,6 +45,9 @@ class Vevent extends CalendarAppModel {
         if (!is_array($event)) {
             return false;
         }
+        if (!empty($event['Vevent'])) {
+            $event = $event['Vevent'];
+        }
         if (!empty($event['uid'])) {
             $uid = $event['uid'];
             $current = $this->findByUid($event['uid']);
@@ -54,7 +57,9 @@ class Vevent extends CalendarAppModel {
             $uid = $this->_generateUid();
             $event['uid'] = $uid;
         }
-        $this->create($event);
+        if (empty($event['id'])) {
+            $event = $this->create($event);
+        }
         if (!$this->save($event)) {
             return false;
         }
@@ -142,6 +147,8 @@ class Vevent extends CalendarAppModel {
         $result = $this->find('all', $query);
 
         foreach ($result as $event) {
+            $event['Vevent']['event_start'] = $event['Vevent']['dtstart'];
+            $event['Vevent']['event_end'] = $event['Vevent']['dtend'];
             $eventStart = $event['Vevent']['dtstart'];
             $eventEnd = $event['Vevent']['dtend'];
             if (strtotime($eventStart) < strtotime($start)) {
@@ -150,7 +157,7 @@ class Vevent extends CalendarAppModel {
             if (strtotime($eventEnd) > strtotime($end)) {
                 $eventEnd = $end;
             }
-            $events = Set::merge($events, $this->_generateCalendarTemplate($eventStart, $eventEnd, $event['Vevent']));
+            $events = $this->_mergeEvents($events, $this->_expandEvent($eventStart, $eventEnd, $event['Vevent']));
         }
 
         // find rrule events
@@ -161,56 +168,271 @@ class Vevent extends CalendarAppModel {
         $query['order'] = array('Vevent.dtstart');
         $result2 = $this->find('all', $query);
         foreach ($result2 as $event) {
-            $this->_expandEvent($start, $end, $event);
+            $e = $this->_expandEvents($start, $end, $event);
+            foreach ($e as $ee) {
+                $eventStart = $ee['event_start'];
+                $eventEnd = $ee['event_end'];
+                if (strtotime($eventStart) < strtotime($start)) {
+                    $eventStart = $start;
+                }
+                if (strtotime($eventEnd) > strtotime($end)) {
+                    $eventEnd = $end;
+                }
+                $events = $this->_mergeEvents($events, $this->_expandEvent($eventStart, $eventEnd, $ee));
+            }
         }
 
         return $events;
     }
 
     /**
-     * _expandEvent
+     * _mergeEvents
+     *
+     * @param $arg
+     * @return
+     */
+    function _mergeEvents($events1, $events2){
+        foreach ($events1 as $date => $e) {
+            if (!empty($events2[$date])) {
+                foreach ($events2[$date] as $event) {
+                    $events1[$date][] = $event;
+                }
+            }
+        }
+        return $events1;
+    }
+
+    /**
+     * _expandEvents
      *
      * @param
      * @return
      */
-    function _expandEvent($start, $end, $event){
+    function _expandEvents($start, $end, $event){
         $events = array();
         $freq = $event['Vevent']['rrule_freq'];
         switch($freq) {
         case 'daily':
-            $events = $this->_expandEventDaily($start, $end, $event);
+            $events = $this->_expandEventsDaily($start, $end, $event);
+            break;
+        case 'weekly':
+            $events = $this->_expandEventsWeekly($start, $end, $event);
+            break;
+        case 'monthly':
+            $events = $this->_expandEventsMonthly($start, $end, $event);
+            break;
+        case 'yearly':
+            $events = $this->_expandEventsYearly($start, $end, $event);
             break;
         }
+        return $events;
     }
 
     /**
-     * _expandEventDaily
-     * 
+     * _expandEventsDaily
+     *
      *
      * @param $start, $end, $event
      * @return
      */
-    function _expandEventDaily($start, $end, $event){
+    function _expandEventsDaily($start, $end, $event){
         $eventStart = $event['Vevent']['dtstart'];
         $eventEnd = $event['Vevent']['dtend'];
-        $eventDiff = strtotime($eventEnd) - strtotime($eventStart);       
+
+        $expandStartPoint; // 登録するイベント群の開始日時
+        $expandEndPoint;
+        $eventDiff = strtotime($eventEnd) - strtotime($eventStart); // 開始から終了までの差分秒
 
         if (strtotime($eventStart) < strtotime($start)) {
             $expandStartPoint = $this->_expandDate($start);
         } else {
             $expandStartPoint = $this->_expandDate($eventStart);
-        }       
-        
+        }
 
         if (empty($event['Vevent']['rrule_count'])) {
             $expandEndPoint = $this->_expandDate($end);
         } else {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year'])));
+            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + $count, $s['year']);
+            if (strtotime($eventEnd) < strtotime($endPoint)) {
+                $expandEndPoint = $this->_expandDate($eventEnd);
+            } else {
+                $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
+            }
         }
 
-        
+        $events = array();
+        $s = $expandStartPoint;
+        $e = $expandEndPoint;
+        if(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+            $events[] = $event['Vevent'];
+        }
+        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) <= mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+            $events[] = $event['Vevent'];
+            $s['day']++;
+        }
+
+        return $events;
+    }
+
+    /**
+     * _expandEventsWeekly
+     *
+     * @param $start, $end, $event
+     * @return
+     */
+    function _expandEventsWeekly($start, $end, $event){
+        $eventStart = $event['Vevent']['dtstart'];
+        $eventEnd = $event['Vevent']['dtend'];
+
+        $expandStartPoint; // 登録するイベント群の開始日時
+        $expandEndPoint;
+        $eventDiff = strtotime($eventEnd) - strtotime($eventStart); // 開始から終了までの差分秒
+
+        if (strtotime($eventStart) < strtotime($start)) {
+            $expandStartPoint = $this->_expandDate($start);
+        } else {
+            $expandStartPoint = $this->_expandDate($eventStart);
+        }
+
+        if (empty($event['Vevent']['rrule_count'])) {
+            $expandEndPoint = $this->_expandDate($end);
+        } else {
+            $count = $event['Vevent']['rrule_count'];
+            $s = $this->_expandDate($eventStart);
+            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + ($count * 7), $s['year']);
+            if (strtotime($eventEnd) < strtotime($endPoint)) {
+                $expandEndPoint = $this->_expandDate($eventEnd);
+            } else {
+                $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
+            }
+        }
+
+        $events = array();
+        $s = $expandStartPoint;
+        $e = $expandEndPoint;
+        if (mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+            $events[] = $event['Vevent'];
+        }
+        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+            $events[] = $event['Vevent'];
+            $s['day'] += 7;
+        }
+
+        return $events;
+    }
+
+    /**
+     * _expandEventsMonthly
+     *
+     *
+     * @param $start, $end, $event
+     * @return
+     */
+    function _expandEventsMonthly($start, $end, $event){
+        $eventStart = $event['Vevent']['dtstart'];
+        $eventEnd = $event['Vevent']['dtend'];
+
+        $expandStartPoint; // 登録するイベント群の開始日時
+        $expandEndPoint;
+        $eventDiff = strtotime($eventEnd) - strtotime($eventStart); // 開始から終了までの差分秒
+
+        if (strtotime($eventStart) < strtotime($start)) {
+            $expandStartPoint = $this->_expandDate($start);
+        } else {
+            $expandStartPoint = $this->_expandDate($eventStart);
+        }
+
+        if (empty($event['Vevent']['rrule_count'])) {
+            $expandEndPoint = $this->_expandDate($end);
+        } else {
+            $count = $event['Vevent']['rrule_count'];
+            $s = $this->_expandDate($eventStart);
+            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'] + $count, $s['day'], $s['year']);
+            if (strtotime($eventEnd) < strtotime($endPoint)) {
+                $expandEndPoint = $this->_expandDate($eventEnd);
+            } else {
+                $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
+            }
+        }
+
+        $events = array();
+        $s = $expandStartPoint;
+        $e = $expandEndPoint;
+        if (mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+            $events[] = $event['Vevent'];
+        }
+        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+            $events[] = $event['Vevent'];
+            $s['month']++;
+        }
+
+        return $events;
+    }
+
+    /**
+     * _expandEventsYearly
+     *
+     *
+     * @param $start, $end, $event
+     * @return
+     */
+    function _expandEventsYearly($start, $end, $event){
+        $eventStart = $event['Vevent']['dtstart'];
+        $eventEnd = $event['Vevent']['dtend'];
+
+        $expandStartPoint; // 登録するイベント群の開始日時
+        $expandEndPoint;
+        $eventDiff = strtotime($eventEnd) - strtotime($eventStart); // 開始から終了までの差分秒
+
+        if (strtotime($eventStart) < strtotime($start)) {
+            $expandStartPoint = $this->_expandDate($start);
+        } else {
+            $expandStartPoint = $this->_expandDate($eventStart);
+        }
+
+        if (empty($event['Vevent']['rrule_count'])) {
+            $expandEndPoint = $this->_expandDate($end);
+        } else {
+            $count = $event['Vevent']['rrule_count'];
+            $s = $this->_expandDate($eventStart);
+            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year'] + $count);
+            if (strtotime($eventEnd) < strtotime($endPoint)) {
+                $expandEndPoint = $this->_expandDate($eventEnd);
+            } else {
+                $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
+            }
+        }
+
+        $events = array();
+        $s = $expandStartPoint;
+        $e = $expandEndPoint;
+        if (mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+            $events[] = $event['Vevent'];
+        }
+        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+            $events[] = $event['Vevent'];
+            $s['year']++;
+        }
+
+        return $events;
     }
 
     /**
@@ -234,9 +456,46 @@ class Vevent extends CalendarAppModel {
                 if (strtotime($eventStart) < strtotime($key)) {
                     $eventStart = $key;
                 }
-                if (strtotime($eventEnd) > strtotime($key)) {
-                    $date = $this->_expanDate($key);
-                    $eventEnd = date('Y-m-d H:i:s', mktime(23, 59, 59, $date['month'], $date['day'], $date['year'])); 
+                $e = $this->_expandDate($eventEnd);
+                if (mktime(0,0,0,$e['month'],$e['day'],$e['year']) > strtotime($key)) {
+                    $date = $this->_expandDate($key);
+                    $eventEnd = date('Y-m-d H:i:s', mktime(23, 59, 59, $date['month'], $date['day'], $date['year']));
+                }
+                $sub['event_start'] = $eventStart;
+                $sub['event_end'] = $eventEnd;
+                $calendar[$key] = array($sub);
+            } else {
+                $calendar[$key] = array();
+            }
+        }
+        return $calendar;
+    }
+
+    /**
+     * _expandEvent
+     *
+     * @param $start, $end
+     * @return
+     */
+    function _expandEvent($start, $end, $event = null){
+        $start = date('Y-m-d', strtotime($start));
+        $end = date('Y-m-d', strtotime($end));
+        $daydiff = (strtotime($end) - strtotime($start)) / (3600 * 24);
+        $calendar = array();
+        $startDate = $this->_expandDate($start);
+        for ($i = 0; $i <= $daydiff; $i++) {
+            $key = date('Y-m-d', mktime(0, 0, 0, $startDate['month'], ($startDate['day'] + $i), $startDate['year']));
+            if ($event) {
+                $sub = $event;
+                $eventStart = $sub['event_start'];
+                $eventEnd = $sub['event_end'];
+                if (strtotime($eventStart) < strtotime($key)) {
+                    $eventStart = $key . ' 00:00:00';
+                }
+                $e = $this->_expandDate($eventEnd);
+                if (mktime(0,0,0,$e['month'],$e['day'],$e['year']) > strtotime($key)) {
+                    $date = $this->_expandDate($key);
+                    $eventEnd = date('Y-m-d H:i:s', mktime(23, 59, 59, $date['month'], $date['day'], $date['year']));
                 }
                 $sub['event_start'] = $eventStart;
                 $sub['event_end'] = $eventEnd;
@@ -279,7 +538,7 @@ class Vevent extends CalendarAppModel {
 
     /**
      * _expandDate
-     * 
+     *
      *
      * @param $date
      * @return
@@ -288,10 +547,10 @@ class Vevent extends CalendarAppModel {
         $expand = array();
         $expand['year'] = date('Y', strtotime($date));
         $expand['month'] = date('m', strtotime($date));
-        $expand['day'] = date('m', strtotime($date));
+        $expand['day'] = date('d', strtotime($date));
         $expand['hour'] = date('H', strtotime($date));
         $expand['min'] = date('i', strtotime($date));
         $expand['second'] = date('s', strtotime($date));
-        return = $expand;
+        return $expand;
     }
 }
