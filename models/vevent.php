@@ -247,6 +247,7 @@ class Vevent extends CalendarAppModel {
     function _expandEventsDaily($start, $end, $event){
         $eventStart = $event['Vevent']['dtstart'];
         $eventEnd = $event['Vevent']['dtend'];
+        $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
 
         $expandStartPoint; // 登録するイベント群の開始日時
         $expandEndPoint;
@@ -261,7 +262,7 @@ class Vevent extends CalendarAppModel {
         if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + $count, $s['year']);
+            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + ($count * $interval), $s['year']);
             if (strtotime($end) < $endPoint) {
                 $expandEndPoint = $this->_expandDate($end);
             } else {
@@ -290,7 +291,7 @@ class Vevent extends CalendarAppModel {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
             $events[] = $event['Vevent'];
-            $s['day']++;
+            $s['day'] += 1 * $interval;
         }
 
         return $events;
@@ -305,6 +306,7 @@ class Vevent extends CalendarAppModel {
     function _expandEventsWeekly($start, $end, $event){
         $eventStart = $event['Vevent']['dtstart'];
         $eventEnd = $event['Vevent']['dtend'];
+        $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
 
         $expandStartPoint; // 登録するイベント群の開始日時
         $expandEndPoint;
@@ -319,7 +321,7 @@ class Vevent extends CalendarAppModel {
         if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + ($count * 7), $s['year']);
+            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + ($count * 7 * $interval), $s['year']);
             if (strtotime($end) < $endPoint) {
                 $expandEndPoint = $this->_expandDate($end);
             } else {
@@ -348,7 +350,7 @@ class Vevent extends CalendarAppModel {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
             $events[] = $event['Vevent'];
-            $s['day'] += 7;
+            $s['day'] += 7 * $interval;
         }
 
         return $events;
@@ -364,6 +366,7 @@ class Vevent extends CalendarAppModel {
     function _expandEventsMonthly($start, $end, $event){
         $eventStart = $event['Vevent']['dtstart'];
         $eventEnd = $event['Vevent']['dtend'];
+        $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
 
         $expandStartPoint; // 登録するイベント群の開始日時
         $expandEndPoint;
@@ -378,7 +381,7 @@ class Vevent extends CalendarAppModel {
         if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'] + $count, $s['day'], $s['year']);
+            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'] + ($count * $interval), $s['day'], $s['year']);
             if (strtotime($end) < $endPoint) {
                 $expandEndPoint = $this->_expandDate($end);
             } else {
@@ -400,7 +403,7 @@ class Vevent extends CalendarAppModel {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
             $events[] = $event['Vevent'];
-            $s['month']++;
+            $s['month'] += 1 * $interval;
         }
 
         return $events;
@@ -416,6 +419,7 @@ class Vevent extends CalendarAppModel {
     function _expandEventsYearly($start, $end, $event){
         $eventStart = $event['Vevent']['dtstart'];
         $eventEnd = $event['Vevent']['dtend'];
+        $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
 
         $expandStartPoint; // 登録するイベント群の開始日時
         $expandEndPoint;
@@ -430,7 +434,7 @@ class Vevent extends CalendarAppModel {
         if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year'] + $count);
+            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year'] + ($count * $interval));
             if (strtotime($end) < $endPoint) {
                 $expandEndPoint = $this->_expandDate($end);
             } else {
@@ -459,7 +463,7 @@ class Vevent extends CalendarAppModel {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
             $events[] = $event['Vevent'];
-            $s['year']++;
+            $s['year'] += 1 * $interval;
         }
 
         return $events;

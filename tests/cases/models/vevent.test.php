@@ -350,6 +350,132 @@ class VeventTestCase extends CakeTestCase{
     }
 
     /**
+     * test_freqDailyCount5Interval2
+     *
+     * jpn:rrule_freq = 'daily'のときに正しくスケジュールが展開されること
+     */
+    function test_freqDailyCount5Interval2(){
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 12:00:00',
+                      'summary' => '毎日5回2回に1回',
+                      'rrule_freq' => 'daily',
+                      'rrule_count' => 5,
+                      'rrule_interval' => 2,
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('2011-11-01', '2011-11-30');
+
+        $this->assertIdentical($result['2011-11-13'], array());
+        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2011-11-14']), 1);
+        $this->assertIdentical(count($result['2011-11-15']), 1);
+        $this->assertIdentical($result['2011-11-24'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-25'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2011-11-24']), 1);
+        $this->assertIdentical(count($result['2011-11-25']), 1);
+        $this->assertIdentical($result['2011-11-26'], array());
+    }
+
+    /**
+     * test_freqWeeklyCount2Interval3
+     *
+     */
+    function test_freqWeeklyCount2Interval3(){
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 12:00:00',
+                      'summary' => '毎週2回3回に1回',
+                      'rrule_freq' => 'weekly',
+                      'rrule_count' => 2,
+                      'rrule_interval' => 3,
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('2011-11-01', '2011-12-31');
+        $this->assertIdentical(count($result), 61);
+        $this->assertIdentical($result['2011-11-13'], array());
+        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2011-11-14']), 1);
+        $this->assertIdentical(count($result['2011-11-15']), 1);
+        $this->assertIdentical($result['2011-11-16'], array());
+        $this->assertIdentical($result['2011-11-21'], array());
+        $this->assertIdentical($result['2011-11-28'], array());
+        $this->assertIdentical($result['2011-12-05'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2011-12-05']), 1);
+        $this->assertIdentical(count($result['2011-12-06']), 1);
+        $this->assertIdentical($result['2011-12-12'], array());
+    }
+
+    /**
+     * test_freqMonthlyCount3Interval2
+     *
+     */
+    function test_freqMonthlyCount3Interval2(){
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 12:00:00',
+                      'summary' => '毎月3回2回に1回',
+                      'rrule_freq' => 'monthly',
+                      'rrule_count' => 3,
+                      'rrule_interval' => 2,
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('2011-11-01', '2012-02-28');
+
+        $this->assertIdentical(count($result), (30 + 31 + 31 + 28));
+        $this->assertIdentical($result['2011-11-13'], array());
+        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2011-11-14']), 1);
+        $this->assertIdentical(count($result['2011-11-15']), 1);
+        $this->assertIdentical($result['2011-11-16'], array());
+        $this->assertIdentical($result['2011-12-14'], array());
+        $this->assertIdentical($result['2012-01-14'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2012-01-14']), 1);
+        $this->assertIdentical(count($result['2012-01-15']), 1);
+        $this->assertIdentical($result['2012-01-16'], array());
+        $this->assertIdentical($result['2012-02-14'], array());
+    }
+
+    /**
+     * test_freqYearlyCount3Interval2
+     *
+     */
+    function test_freqYearlyCount3Interval2(){
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 12:00:00',
+                      'summary' => '毎年3回2回に1回',
+                      'rrule_freq' => 'yearly',
+                      'rrule_count' => 3,
+                      'rrule_interval' => 2,
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('2011-11-01', '2015-11-30');
+        $this->assertIdentical($result['2011-11-13'], array());
+        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2011-11-14']), 1);
+        $this->assertIdentical(count($result['2011-11-15']), 1);
+        $this->assertIdentical($result['2011-11-16'], array());
+
+        $this->assertIdentical($result['2012-11-14'], array());
+
+        $this->assertIdentical($result['2013-11-13'], array());
+        $this->assertIdentical($result['2013-11-14'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2013-11-14']), 1);
+        $this->assertIdentical(count($result['2013-11-15']), 1);
+        $this->assertIdentical($result['2013-11-16'], array());
+
+        $this->assertIdentical($result['2014-11-14'], array());
+
+        $this->assertIdentical($result['2015-11-13'], array());
+        $this->assertIdentical($result['2015-11-14'][0]['uid'], $uid);
+        $this->assertIdentical(count($result['2015-11-14']), 1);
+        $this->assertIdentical(count($result['2015-11-15']), 1);
+        $this->assertIdentical($result['2015-11-16'], array());
+    }
+
+
+    /**
      * test_findRange
      *
      * jpn:findByRange()で日付範囲分の配列が生成されること
