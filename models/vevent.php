@@ -296,7 +296,6 @@ class Vevent extends CalendarAppModel {
                 $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
             }
         } else {
-            
             $expandEndPoint = $this->_expandDate($end);
         }
 
