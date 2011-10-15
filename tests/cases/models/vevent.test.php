@@ -176,7 +176,7 @@ class VeventTestCase extends CakeTestCase{
 
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
-                     'dtend' => '2011-11-15 10:00:00',
+                      'dtend' => '2011-11-15 10:00:00',
                       'summary' => 'OK',
                       'rrule_freq' => 'weekly',
                       'rrule_count' => 10,
@@ -187,7 +187,7 @@ class VeventTestCase extends CakeTestCase{
 
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
-                     'dtend' => '2011-11-15 10:00:00',
+                      'dtend' => '2011-11-15 10:00:00',
                       'summary' => 'rrule_bydayに不正な値が入っている',
                       'rrule_freq' => 'weekly',
                       'rrule_count' => 10,
@@ -197,6 +197,25 @@ class VeventTestCase extends CakeTestCase{
         $expected = array('rrule_byday',
                           );
         $this->assertIdentical(array_keys($this->Vevent->validationErrors), $expected);
+    }
+
+    /**
+     * test_DropEvent
+     *
+     */
+    function test_DropEvent(){
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 10:00:00',
+                      'summary' => 'OK',
+                      'rrule_freq' => 'weekly',
+                      'rrule_count' => 10,
+                      'rrule_byday' => 'SU,MO'
+                      );
+        $uid = $this->Vevent->setEvent($data);
+
+        $result = $this->Vevent->dropEvent($uid);
+        $this->assertTrue($result);
     }
 
     /**
@@ -754,30 +773,70 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical($result['1997-12-24'], array());
     }
 
+
     /**
-     * test_RFC2445freqWeeklyCount10ByDay
+     * test_RFC2445freqWeeklyInterval
      *
      * RFC2445:
+     * Every other week - forever:
      * DTSTART;TZID=US-Eastern:19970902T090000
-     * RRULE:FREQ=WEEKLY;COUNT=10;WKST=SU;BYDAY=TU,TH
-     * ==> (1997 9:00 AM EDT)September 2,4,9,11,16,18,23,25,30;October 2
-     * Every other week on Monday, Wednesday and Friday until December 24,
-     * 1997, but starting on Tuesday, September 2, 1997:
+     * RRULE:FREQ=WEEKLY;INTERVAL=2;WKST=SU
+     * ==> (1997 9:00 AM EDT)September 2,16,30;October 14
+     *     (1997 9:00 AM EST)October 28;November 11,25;December 9,23
+     *     (1998 9:00 AM EST)January 6,20;February
+     * ...
      *
      * jpn:
      */
-    function test_RFC2445freqWeeklyCount10ByDay(){
+    function test_RFC2445freqWeeklyInterval(){
 
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
                       'summary' => 'RFC2445',
                       'rrule_freq' => 'weekly',
-                      'rrule_count' => 10,
+                      'rrule_interval' => 2
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-09-01', '1998-01-31');
+        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-16'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-30'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-10-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-10-28'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-11-11'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-11-25'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-12-09'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-12-23'][0]['uid'], $uid);
+        $this->assertIdentical($result['1998-01-06'][0]['uid'], $uid);
+        $this->assertIdentical($result['1998-01-20'][0]['uid'], $uid);
+    }
+
+    /**
+     * test_RFC2445freqWeeklyCount10Byday
+     *
+     * RFC2445:
+     * Weekly on Tuesday and Thursday for 5 weeks:
+     * DTSTART;TZID=US-Eastern:19970902T090000
+     * RRULE:FREQ=WEEKLY;UNTIL=19971007T000000Z;WKST=SU;BYDAY=TU,TH
+     * or
+     * RRULE:FREQ=WEEKLY;COUNT=10;WKST=SU;BYDAY=TU,TH
+     * ==> (1997 9:00 AM EDT)September 2,4,9,11,16,18,23,25,30;October 2
+     *
+     * jpn:
+     */
+    function test_RFC2445freqWeeklyCount10Byday(){
+
+        $data = array(
+                      'dtstart' => '1997-09-02 09:00:00',
+                      'dtend' => '1997-09-02 12:00:00',
+                      'summary' => 'RFC2445',
+                      'rrule_freq' => 'weekly',
+                      'rrule_until' => '1997-10-07 00:00:00',
                       'rrule_byday' => 'TU,TH'
                       );
         $uid = $this->Vevent->setEvent($data);
-        $result = $this->Vevent->findByRange('1997-09-01', '1997-11-30');
+        $result = $this->Vevent->findByRange('1997-09-01', '1998-01-31');
         $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-09-04'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-09-09'][0]['uid'], $uid);
@@ -785,12 +844,10 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical($result['1997-09-16'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-09-18'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-09-23'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-25'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-09-30'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-10-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-07'], array());
-        $this->assertIdentical($result['1997-10-09'], array());
     }
+
 
     /**
      * test_RFC2445freqWeeklyUntilByDay
@@ -819,7 +876,7 @@ class VeventTestCase extends CakeTestCase{
                       );
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1997-12-31');
-         $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-09-03'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-09-05'][0]['uid'], $uid);
         $this->assertIdentical($result['1997-09-15'][0]['uid'], $uid);
@@ -847,7 +904,85 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical($result['1997-12-22'][0]['uid'], $uid);
     }
 
+    /**
+     * test_RFC2445freqWeeklyCount8Interval2ByDay
+     *
+     * RFC2445:
+     * Every other week on Tuesday and Thursday, for 8 occurrences:
+     * DTSTART;TZID=US-Eastern:19970902T090000
+     * RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=8;WKST=SU;BYDAY=TU,TH
+     * ==> (1997 9:00 AM EDT)September 2,4,16,18,30;October 2,14,16
+     *
+     * jpn:
+     */
+    function test_RFC2445freqWeeklyCount8Interval2ByDay(){
 
+        $data = array(
+                      'dtstart' => '1997-09-02 09:00:00',
+                      'dtend' => '1997-09-02 12:00:00',
+                      'summary' => 'RFC2445',
+                      'rrule_freq' => 'weekly',
+                      'rrule_count' => 8,
+                      'rrule_interval' => 2,
+                      'rrule_byday' => 'TU,TH'
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-09-01', '1998-01-31');
+        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-04'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-16'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-18'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-30'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-10-02'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-10-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-10-16'][0]['uid'], $uid);
+    }
+
+    /**
+     * test_RFC2445freqMonthlyCount10BydayFirstFr
+     *
+     * RFC2445:
+     * Monthly on the 1st Friday for ten occurrences:
+     * DTSTART;TZID=US-Eastern:19970905T090000
+     * RRULE:FREQ=MONTHLY;COUNT=10;BYDAY=1FR
+     * ==> (1997 9:00 AM EDT)September 5;October 3
+     *    (1997 9:00 AM EST)November 7;Dec 5
+     *    (1998 9:00 AM EST)January 2;February 6;March 6;April 3
+     *    (1998 9:00 AM EDT)May 1;June 5
+     *
+     */
+    function test_RFC2445freqMonthlyCount10BydayFirstFr() {
+    }
+
+    /**
+     * test_RFC2445freqMonthlyUntilBydayFirstFr
+     *
+     * RFC2445:
+     * Monthly on the 1st Friday until December 24, 1997:
+     * DTSTART;TZID=US-Eastern:19970905T090000
+     * RRULE:FREQ=MONTHLY;UNTIL=19971224T000000Z;BYDAY=1FR
+     * ==> (1997 9:00 AM EDT)September 5;October 3
+     *     (1997 9:00 AM EST)November 7;December 5
+     *
+     */
+    function test_RFC2445freqMonthlyUntilBydayFirstFr() {
+    }
+
+    /**
+     * test_RFC2445freqMonthlyInterval2Count10Byday1Suminus1Su
+     *
+     * RFC2445:
+     * Every other month on the 1st and last Sunday of the month for 10
+     * occurrences:
+     * DTSTART;TZID=US-Eastern:19970907T090000
+     * RRULE:FREQ=MONTHLY;INTERVAL=2;COUNT=10;BYDAY=1SU,-1SU
+     * ==> (1997 9:00 AM EDT)September 7,28
+     *     (1997 9:00 AM EST)November 2,30
+     *     (1998 9:00 AM EST)January 4,25;March 1,29
+     *     (1998 9:00 AM EDT)May 3,31
+     */
+    function test_RFC2445freqMonthlyInterval2Count10Byday1Suminus1Su() {
+    }
 
     /**
      * test_findRange

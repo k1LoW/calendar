@@ -80,6 +80,23 @@ class Vevent extends CalendarAppModel {
     }
 
     /**
+     * dropEvent
+     *
+     * @param $uid
+     * @return
+     */
+    function dropEvent($uid){
+        if (!$uid) {
+            return false;
+        }
+        $event = $this->findByUid($uid);
+        if (empty($event)) {
+            return false;
+        }
+        return $this->delete($event['Vevent']['id']);
+    }
+
+    /**
      * findByUid
      *
      * @param $uid
@@ -142,10 +159,6 @@ class Vevent extends CalendarAppModel {
      * @return
      */
     function findByRange($start, $end){
-        //$s = $this->_expandDate($start);
-        //$e = $this->_expandDate($end);
-        //$start = date('Y-m-d H:i:s', mktime(0,0,0, $s['month'], $s['day'], $s['year']));
-        //$end = date('Y-m-d H:i:s', mktime(23,59,59, $e['month'], $e['day'], $e['year']));
         $events = $this->_generateCalendarTemplate($start, $end);
 
         $query = array();
@@ -367,7 +380,7 @@ class Vevent extends CalendarAppModel {
                 if (!$first || in_array($strW, $byday)) {
                     $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
                     $day = $s['day'];
-                    if ($w === 6) {
+                    if ($w == 6) {
                         $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
                         if (in_array($strW, $byday)) {
                             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
