@@ -116,34 +116,36 @@ class Vevent extends CalendarAppModel {
      * @return
      */
     function findByMonth($month, $year = null){
+        if (empty($year)) {
+            $year = date('Y');
+        }
         if (empty($month)) {
             $month = date('m');
-            $strMonth = date('Y-m');
-        } elseif (is_numeric($month) && 1 <= $month && $month <= 12) {
-            if (empty($year)) {
-                $year = date('Y');
-                $strMonth = $year . '-' . $month;
-            } elseif (is_numeric($year)) {
-                $strMonth = $year . '-' . $month;
-            } else {
-                return false;
-            }
-        } else {
+            $strMonth = $year . '-' . $month;
+        } elseif (preg_match('/^[0-9]{4}-[0-9]{2}$/',$month)) {
+            $strMonth = $month;
+        } elseif (!is_numeric($month)) {
             return false;
+        } else {
+            $strMonth = $year . '-' . $month;
         }
         $start = $strMonth . '-1';
-        $end = date('Y-m-d', strtotime($year . '-' . (int)($month + 1) . '-1'));
+        $end = date('Y-m-d H:i:s', mktime(0,0,0,(int)($month + 1), 0, $year));
         $events = $this->findByRange($start, $end);
         return $events;
     }
 
-    /**
+    /*
      * findByRange
      *
      * @param $start, $end
      * @return
      */
     function findByRange($start, $end){
+        //$s = $this->_expandDate($start);
+        //$e = $this->_expandDate($end);
+        //$start = date('Y-m-d H:i:s', mktime(0,0,0, $s['month'], $s['day'], $s['year']));
+        //$end = date('Y-m-d H:i:s', mktime(23,59,59, $e['month'], $e['day'], $e['year']));
         $events = $this->_generateCalendarTemplate($start, $end);
 
         $query = array();
@@ -281,6 +283,7 @@ class Vevent extends CalendarAppModel {
                 $expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
             }
         } else {
+            
             $expandEndPoint = $this->_expandDate($end);
         }
 
@@ -407,9 +410,9 @@ class Vevent extends CalendarAppModel {
                         $w = 0;
                     }
                     /*
-                    if ($w != 0) {
-                        $day -= $w;
-                    }
+                      if ($w != 0) {
+                      $day -= $w;
+                      }
                     */
                     while($w < 6) {
                         $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
@@ -558,7 +561,7 @@ class Vevent extends CalendarAppModel {
      * @param $start, $end
      * @return
      */
-    function _generateCalendarTemplate($start, $end, $event = null){
+    function _generateCalendarTemplate($start, $end){
         $start = date('Y-m-d', strtotime($start));
         $end = date('Y-m-d', strtotime($end));
         $daydiff = (strtotime($end) - strtotime($start)) / (3600 * 24);
@@ -566,24 +569,7 @@ class Vevent extends CalendarAppModel {
         $startDate = $this->_expandDate($start);
         for ($i = 0; $i <= $daydiff; $i++) {
             $key = date('Y-m-d', mktime(0, 0, 0, $startDate['month'], ($startDate['day'] + $i), $startDate['year']));
-            if ($event) {
-                $sub = $event;
-                $eventStart = $event['dtstart'];
-                $eventEnd = $event['dtend'];
-                if (strtotime($eventStart) < strtotime($key)) {
-                    $eventStart = $key;
-                }
-                $e = $this->_expandDate($eventEnd);
-                if (mktime(0,0,0,$e['month'],$e['day'],$e['year']) > strtotime($key)) {
-                    $date = $this->_expandDate($key);
-                    $eventEnd = date('Y-m-d H:i:s', mktime(23, 59, 59, $date['month'], $date['day'], $date['year']));
-                }
-                $sub['event_start'] = $eventStart;
-                $sub['event_end'] = $eventEnd;
-                $calendar[$key] = array($sub);
-            } else {
-                $calendar[$key] = array();
-            }
+            $calendar[$key] = array();
         }
         return $calendar;
     }
