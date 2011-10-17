@@ -15,7 +15,7 @@ This Plugin is personal test use.
 * First, put `calendar' directory on app/plugins in your CakePHP application
 * Second, create schema
 
-        ```cake schema create -path app/plugins/calendar/config/schema```
+        cake schema create -path app/plugins/calendar/config/schema
 * Third, add the following code in whichever controller you want to use calendar
 
         <?php
