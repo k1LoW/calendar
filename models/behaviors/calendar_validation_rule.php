@@ -15,7 +15,7 @@ class CalendarValidationRuleBehavior extends ModelBehavior {
         $start = $model->data[$model->alias]['dtstart'];
         $end = $model->data[$model->alias]['dtend'];
 
-        if (strtotime($start) > strtotime($end)) {
+        if (strtotime($start) >= strtotime($end)) {
             return false;
         }
         return true;
