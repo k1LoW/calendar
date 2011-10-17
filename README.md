@@ -6,7 +6,7 @@ This Plugin is personal test use.
 
 ## Features ##
 
-* iCalendar(RFC2445) subset design
+* iCalendar (RFC2445) subset design
 * Set event
 * Expand events data  for calendar rendering.
 
@@ -15,14 +15,13 @@ This Plugin is personal test use.
 * First, put `calendar' directory on app/plugins in your CakePHP application
 * Second, create schema
 
-@cake schema create -path app/plugins/calendar/config/schema@
-
+        ```cake schema create -path app/plugins/calendar/config/schema```
 * Third, add the following code in whichever controller you want to use calendar
 
-    <?php
-       var $uses = array('Calendar.Venvent');
+        <?php
+           var $uses = array('Calendar.Venvent');
 
-## iCalendar(RFC2445) support ##
+## iCalendar (RFC2445) support ##
 
 * DTSTART
 * DTEND
@@ -32,7 +31,7 @@ This Plugin is personal test use.
 * RRULE::FREQ
 * RRULE::COUNT
 * RRULE::UNTIL
-* RRULE::BYDAY (80%)
+* RRULE::BYDAY (wip)
 * CREATED
 
 ## License ##
