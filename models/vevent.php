@@ -144,14 +144,14 @@ class Vevent extends CalendarAppModel {
         if (empty($month)) {
             $month = date('m');
             $strMonth = $year . '-' . $month;
-        } elseif (preg_match('/^[0-9]{4}-[0-9]{2}$/',$month)) {
-            $strMonth = $month;
+        } elseif (preg_match('/^([0-9]{4})-([0-9]{2})$/',$month, $matches)) {
+            $year = $matches[1];
+            $month = $matches[2];
         } elseif (!is_numeric($month)) {
             return false;
         } else {
-            $strMonth = $year . '-' . $month;
         }
-        $start = $strMonth . '-1';
+        $start = date('Y-m-d H:i:s', mktime(0,0,0,$month, 1, $year));
         $end = date('Y-m-d H:i:s', mktime(0,0,0,(int)($month + 1), 0, $year));
         $events = $this->findByRange($start, $end);
         return $events;
@@ -372,13 +372,17 @@ class Vevent extends CalendarAppModel {
         $s = $expandStartPoint;
         $e = $expandEndPoint;
         $first = true;
+        if ($this->_expandDate($event['Vevent']['dtstart']) !== $s){
+            //
+            // jpn:表示範囲に最初の設定日が入っていない場合は$first = false
+            $first = false;
+        }
         if ($this->_mta($s) === $this->_mta($e)) {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
             $first = false;
         }
-
         while($this->_mta($s) < $this->_mta($e)) {
             $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
 
@@ -400,7 +404,7 @@ class Vevent extends CalendarAppModel {
                         $w = 0;
                     }
                     if ($w != 0) {
-                        // 
+                        //
                         // jpn:2週目からは日から土まで探索する
                         $day -= $w;
                     }

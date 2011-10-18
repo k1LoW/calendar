@@ -6,7 +6,7 @@ This Plugin is personal test use.
 
 ## Features ##
 
-* iCalendar (RFC2445) subset design
+* iCalendar ([RFC2445](http://tools.ietf.org/html/rfc2445)) subset design
 * Set event
 * Expand events data  for calendar rendering.
 
