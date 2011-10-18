@@ -60,19 +60,19 @@ class Vevent extends CalendarAppModel {
         if (!is_array($event)) {
             return false;
         }
-        if (!empty($event['Vevent'])) {
-            $event = $event['Vevent'];
+        if (empty($event['Vevent'])) {
+            $event = array('Vevent' => $event);
         }
-        if (!empty($event['uid'])) {
-            $uid = $event['uid'];
-            $current = $this->findByUid($event['uid']);
+        if (!empty($event['Vevent']['uid'])) {
+            $uid = $event['Vevent']['uid'];
+            $current = $this->findByUid($event['Vevent']['uid']);
             $event = Set::merge($current, $event);
         } else {
-            unset($event['id']);
+            unset($event['Vevent']['id']);
             $uid = $this->_generateUid();
-            $event['uid'] = $uid;
+            $event['Vevent']['uid'] = $uid;
         }
-        if (empty($event['id'])) {
+        if (empty($event['Vevent']['id'])) {
             $event = $this->create($event);
         }
         if (!$this->save($event)) {
