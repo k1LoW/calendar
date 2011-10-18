@@ -190,7 +190,7 @@ class Vevent extends CalendarAppModel {
             if (strtotime($eventEnd) > strtotime($end)) {
                 $eventEnd = $end;
             }
-            $events = $this->_mergeEvents($events, $this->_expandEvent($eventStart, $eventEnd, $event['Vevent']));
+            $events = $this->_mergeEvents($events, $this->_expandEvent($eventStart, $eventEnd, $event));
         }
 
         // find rrule events
@@ -618,12 +618,15 @@ class Vevent extends CalendarAppModel {
         $daydiff = (strtotime($end) - strtotime($start)) / (3600 * 24);
         $events = array();
         $startDate = $this->_expandDate($start);
+        if (empty($event['Vevent'])) {
+            $event = array('Vevent' => $event);
+        }
         for ($i = 0; $i <= $daydiff; $i++) {
             $key = date('Y-m-d', mktime(0, 0, 0, $startDate['month'], ($startDate['day'] + $i), $startDate['year']));
             if ($event) {
                 $sub = $event;
-                $eventStart = $sub['event_start'];
-                $eventEnd = $sub['event_end'];
+                $eventStart = $sub['Vevent']['event_start'];
+                $eventEnd = $sub['Vevent']['event_end'];
                 if (strtotime($eventStart) < strtotime($key)) {
                     $eventStart = $key . ' 00:00:00';
                 }
@@ -632,8 +635,8 @@ class Vevent extends CalendarAppModel {
                     $date = $this->_expandDate($key);
                     $eventEnd = date('Y-m-d H:i:s', mktime(23, 59, 59, $date['month'], $date['day'], $date['year']));
                 }
-                $sub['event_start'] = $eventStart;
-                $sub['event_end'] = $eventEnd;
+                $sub['Vevent']['event_start'] = $eventStart;
+                $sub['Vevent']['event_end'] = $eventEnd;
                 $events[$key] = array($sub);
             } else {
                 $events[$key] = array();

@@ -236,11 +236,11 @@ class VeventTestCase extends CakeTestCase{
         $result = $this->Vevent->findByRange('2011-11-01', '2011-11-30');
 
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 2);
-        $this->assertIdentical($result['2011-11-23'][0]['uid'], $uid);
-        $this->assertIdentical($result['2011-11-24'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-23'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2011-11-24'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-23']), 2);
         $this->assertIdentical(count($result['2011-11-24']), 1);
         $this->assertIdentical($result['2011-11-25'], array());
@@ -263,14 +263,14 @@ class VeventTestCase extends CakeTestCase{
         $result = $this->Vevent->findByRange('2011-11-01', '2011-11-30');
         $this->assertIdentical(count($result), 30);
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
         $this->assertIdentical($result['2011-11-16'], array());
-        $this->assertIdentical($result['2011-11-21'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-21'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-21']), 1);
         $this->assertIdentical(count($result['2011-11-22']), 1);
-        $this->assertIdentical($result['2011-11-28'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-28'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-28']), 1);
         $this->assertIdentical(count($result['2011-11-29']), 1);
         $this->assertIdentical($result['2011-11-30'], array());
@@ -294,15 +294,15 @@ class VeventTestCase extends CakeTestCase{
 
         $this->assertIdentical(count($result), (30 + 31 + 31 + 28));
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
         $this->assertIdentical($result['2011-11-16'], array());
-        $this->assertIdentical($result['2011-12-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-12-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-12-14']), 1);
         $this->assertIdentical(count($result['2011-12-15']), 1);
         $this->assertIdentical($result['2011-12-16'], array());
-        $this->assertIdentical($result['2012-01-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2012-01-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2012-01-14']), 1);
         $this->assertIdentical(count($result['2012-01-15']), 1);
         $this->assertIdentical($result['2012-01-16'], array());
@@ -325,25 +325,25 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('2011-11-01', '2015-11-30');
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
         $this->assertIdentical($result['2011-11-16'], array());
 
         $this->assertIdentical($result['2012-11-13'], array());
-        $this->assertIdentical($result['2012-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2012-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2012-11-14']), 1);
         $this->assertIdentical(count($result['2012-11-15']), 1);
         $this->assertIdentical($result['2012-11-16'], array());
 
         $this->assertIdentical($result['2013-11-13'], array());
-        $this->assertIdentical($result['2013-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2013-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2013-11-14']), 1);
         $this->assertIdentical(count($result['2013-11-15']), 1);
         $this->assertIdentical($result['2013-11-16'], array());
 
         $this->assertIdentical($result['2014-11-13'], array());
-        $this->assertIdentical($result['2014-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2014-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2014-11-14']), 1);
         $this->assertIdentical(count($result['2014-11-15']), 1);
         $this->assertIdentical($result['2014-11-16'], array());
@@ -369,7 +369,7 @@ class VeventTestCase extends CakeTestCase{
         $result = $this->Vevent->findByRange('2011-11-01', '2011-11-30');
         $this->assertIdentical(count($result), 30);
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 2);
         $this->assertIdentical(count($result['2011-11-16']), 2);
@@ -396,7 +396,7 @@ class VeventTestCase extends CakeTestCase{
         $result = $this->Vevent->findByRange('2011-11-01', '2011-11-30');
         $this->assertIdentical(count($result), 30);
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
 
@@ -422,19 +422,19 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('2011-11-01', '2015-11-30');
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
         $this->assertIdentical($result['2011-11-16'], array());
 
         $this->assertIdentical($result['2012-11-13'], array());
-        $this->assertIdentical($result['2012-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2012-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2012-11-14']), 1);
         $this->assertIdentical(count($result['2012-11-15']), 1);
         $this->assertIdentical($result['2012-11-16'], array());
 
         $this->assertIdentical($result['2013-11-13'], array());
-        $this->assertIdentical($result['2013-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2013-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2013-11-14']), 1);
         $this->assertIdentical(count($result['2013-11-15']), 1);
         $this->assertIdentical($result['2013-11-16'], array());
@@ -462,11 +462,11 @@ class VeventTestCase extends CakeTestCase{
         $result = $this->Vevent->findByRange('2011-11-01', '2011-11-30');
 
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
-        $this->assertIdentical($result['2011-11-22'][0]['uid'], $uid);
-        $this->assertIdentical($result['2011-11-23'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-22'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2011-11-23'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-22']), 1);
         $this->assertIdentical(count($result['2011-11-23']), 1);
         $this->assertIdentical($result['2011-11-24'], array());
@@ -490,13 +490,13 @@ class VeventTestCase extends CakeTestCase{
         $result = $this->Vevent->findByRange('2011-11-01', '2011-12-31');
         $this->assertIdentical(count($result), 61);
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
         $this->assertIdentical($result['2011-11-16'], array());
         $this->assertIdentical($result['2011-11-21'], array());
         $this->assertIdentical($result['2011-11-28'], array());
-        $this->assertIdentical($result['2011-12-05'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-12-05'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-12-05']), 1);
         $this->assertIdentical(count($result['2011-12-06']), 1);
         $this->assertIdentical($result['2011-12-12'], array());
@@ -521,12 +521,12 @@ class VeventTestCase extends CakeTestCase{
 
         $this->assertIdentical(count($result), (30 + 31 + 31 + 28));
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
         $this->assertIdentical($result['2011-11-16'], array());
         $this->assertIdentical($result['2011-12-14'], array());
-        $this->assertIdentical($result['2012-01-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2012-01-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2012-01-14']), 1);
         $this->assertIdentical(count($result['2012-01-15']), 1);
         $this->assertIdentical($result['2012-01-16'], array());
@@ -550,7 +550,7 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('2011-11-01', '2015-11-30');
         $this->assertIdentical($result['2011-11-13'], array());
-        $this->assertIdentical($result['2011-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2011-11-14']), 1);
         $this->assertIdentical(count($result['2011-11-15']), 1);
         $this->assertIdentical($result['2011-11-16'], array());
@@ -558,7 +558,7 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical($result['2012-11-14'], array());
 
         $this->assertIdentical($result['2013-11-13'], array());
-        $this->assertIdentical($result['2013-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2013-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2013-11-14']), 1);
         $this->assertIdentical(count($result['2013-11-15']), 1);
         $this->assertIdentical($result['2013-11-16'], array());
@@ -566,7 +566,7 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical($result['2014-11-14'], array());
 
         $this->assertIdentical($result['2015-11-13'], array());
-        $this->assertIdentical($result['2015-11-14'][0]['uid'], $uid);
+        $this->assertIdentical($result['2015-11-14'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical(count($result['2015-11-14']), 1);
         $this->assertIdentical(count($result['2015-11-15']), 1);
         $this->assertIdentical($result['2015-11-16'], array());
@@ -596,8 +596,8 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1997-12-31');
         $this->assertIdentical($result['1997-09-01'], array());
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-23'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-23'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['1997-12-24'], array());
     }
 
@@ -627,9 +627,9 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1997-12-31 23:59:59');
         $this->assertIdentical($result['1997-09-01'], array());
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-21'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-31'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-21'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-31'][0]['Vevent']['uid'], $uid);
     }
 
     /**
@@ -655,9 +655,9 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1997-11-30');
         $this->assertIdentical($result['1997-09-01'], array());
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-03'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-11'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-03'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-11'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['1997-09-12'], array());
     }
 
@@ -686,11 +686,11 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1997-12-31');
         $this->assertIdentical($result['1997-09-01'], array());
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-12'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-22'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-12'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-12'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-22'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-12'][0]['Vevent']['uid'], $uid);
     }
 
     /**
@@ -731,16 +731,16 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1997-12-31');
         $this->assertIdentical($result['1997-09-01'], array());
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-09'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-16'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-23'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-30'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-07'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-14'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-21'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-28'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-04'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-09'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-16'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-23'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-30'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-07'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-14'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-21'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-28'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-04'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['1997-11-11'], array());
     }
 
@@ -766,10 +766,10 @@ class VeventTestCase extends CakeTestCase{
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1997-12-31');
         $this->assertIdentical($result['1997-09-01'], array());
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['1997-09-08'], array());
-        $this->assertIdentical($result['1997-09-09'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-23'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-09'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-23'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['1997-12-24'], array());
     }
 
@@ -799,17 +799,17 @@ class VeventTestCase extends CakeTestCase{
                       );
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1998-01-31');
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-16'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-30'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-14'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-28'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-11'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-25'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-09'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-23'][0]['uid'], $uid);
-        $this->assertIdentical($result['1998-01-06'][0]['uid'], $uid);
-        $this->assertIdentical($result['1998-01-20'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-16'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-30'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-14'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-28'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-11'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-25'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-09'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-23'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-06'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-20'][0]['Vevent']['uid'], $uid);
     }
 
     /**
@@ -837,15 +837,15 @@ class VeventTestCase extends CakeTestCase{
                       );
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1998-01-31');
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-04'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-09'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-11'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-16'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-18'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-23'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-30'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-02'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-04'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-09'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-11'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-16'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-18'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-23'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-30'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-02'][0]['Vevent']['uid'], $uid);
     }
 
 
@@ -876,32 +876,32 @@ class VeventTestCase extends CakeTestCase{
                       );
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1997-12-31');
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-03'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-05'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-15'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-17'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-19'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-29'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-01'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-01'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-03'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-13'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-15'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-17'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-27'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-29'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-31'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-10'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-12'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-14'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-24'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-26'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-11-28'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-08'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-10'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-12'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-12-22'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-03'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-05'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-15'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-17'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-19'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-29'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-01'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-01'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-03'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-13'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-15'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-17'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-27'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-29'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-31'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-12'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-14'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-24'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-26'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-11-28'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-08'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-12'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-12-22'][0]['Vevent']['uid'], $uid);
     }
 
     /**
@@ -928,14 +928,14 @@ class VeventTestCase extends CakeTestCase{
                       );
         $uid = $this->Vevent->setEvent($data);
         $result = $this->Vevent->findByRange('1997-09-01', '1998-01-31');
-        $this->assertIdentical($result['1997-09-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-04'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-16'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-18'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-09-30'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-02'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-14'][0]['uid'], $uid);
-        $this->assertIdentical($result['1997-10-16'][0]['uid'], $uid);
+        $this->assertIdentical($result['1997-09-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-04'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-16'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-18'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-09-30'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-14'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-10-16'][0]['Vevent']['uid'], $uid);
     }
 
     /**
@@ -1002,7 +1002,7 @@ class VeventTestCase extends CakeTestCase{
     function test_findByRangeWithEvent(){
         $result = $this->Vevent->findByRange('2011-10-01', '2011-10-18');
         $this->assertIdentical(count($result), 18);
-        $this->assertIdentical($result['2011-10-15'][0]['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
-        $this->assertIdentical($result['2011-10-16'][0]['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
+        $this->assertIdentical($result['2011-10-15'][0]['Vevent']['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
+        $this->assertIdentical($result['2011-10-16'][0]['Vevent']['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
     }
 }
