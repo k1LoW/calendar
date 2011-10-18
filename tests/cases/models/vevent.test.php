@@ -640,6 +640,28 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical(array_keys($this->Vevent->validationErrors), $expected);
     }
 
+   /**
+     * test_findRange
+     *
+     * jpn:findByRange()で日付範囲分の配列が生成されること
+     */
+    function test_findByRange(){
+        $result = $this->Vevent->findByRange('2011-11-01', '2011-11-10');
+        $this->assertIdentical(count($result), 10);
+    }
+
+    /**
+     * test_findRangeWithEvent
+     *
+     * jpn:findByRange()で日付範囲分の配列が生成され登録されているイベントがセットされていること
+     */
+    function test_findByRangeWithEvent(){
+        $result = $this->Vevent->findByRange('2011-10-01', '2011-10-18');
+        $this->assertIdentical(count($result), 18);
+        $this->assertIdentical($result['2011-10-15'][0]['Vevent']['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
+        $this->assertIdentical($result['2011-10-16'][0]['Vevent']['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
+    }
+
     /**
      * test_RFC2445freqDailyUntil
      *
@@ -1054,27 +1076,5 @@ class VeventTestCase extends CakeTestCase{
      *     (1998 9:00 AM EDT)May 3,31
      */
     function test_RFC2445freqMonthlyInterval2Count10Byday1Suminus1Su() {
-    }
-
-    /**
-     * test_findRange
-     *
-     * jpn:findByRange()で日付範囲分の配列が生成されること
-     */
-    function test_findByRange(){
-        $result = $this->Vevent->findByRange('2011-11-01', '2011-11-10');
-        $this->assertIdentical(count($result), 10);
-    }
-
-    /**
-     * test_findRangeWithEvent
-     *
-     * jpn:findByRange()で日付範囲分の配列が生成され登録されているイベントがセットされていること
-     */
-    function test_findByRangeWithEvent(){
-        $result = $this->Vevent->findByRange('2011-10-01', '2011-10-18');
-        $this->assertIdentical(count($result), 18);
-        $this->assertIdentical($result['2011-10-15'][0]['Vevent']['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
-        $this->assertIdentical($result['2011-10-16'][0]['Vevent']['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
     }
 }

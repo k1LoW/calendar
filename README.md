@@ -2,7 +2,7 @@
 
 ## Alpha Status ##
 
-This Plugin is personal test use.
+THIS PLUGIN IS PERSONAL TEST USE.
 
 ## Features ##
 
@@ -25,7 +25,7 @@ This Plugin is personal test use.
 
 * DTSTART
 * DTEND
-* Daylong event
+ *  Daylong event
 * SUMMARY
 * DESCRIPTION
 * LOCATION
@@ -34,6 +34,12 @@ This Plugin is personal test use.
 * RRULE::UNTIL
 * RRULE::BYDAY (wip)
 * CREATED
+
+## TODO ##
+
+* More test.
+* Date filter. (ex. holiday)
+* Extra attribute support. (ex. user_id)
 
 ## License ##
 
