@@ -43,7 +43,8 @@ class CalendarValidationRuleBehavior extends ModelBehavior {
      */
     function checkByDay(&$model, $fields){
         $byday = explode(',', array_shift($fields));
-        if (!empty($byday) && $model->data[$model->alias]['rrule_freq'] === 'daily') {
+        if (!empty($byday)
+            && (empty($model->data[$model->alias]['rrule_freq']) || $model->data[$model->alias]['rrule_freq'] === 'daily')) {
             return false;
         }
         foreach ($byday as $value) {

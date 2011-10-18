@@ -51,8 +51,10 @@ class Vevent extends CalendarAppModel {
     /**
      * setEvent
      *
+     * jpn:イベント登録
+     *
      * @param $event
-     * @return
+     * @return Mixed
      */
     function setEvent($event){
         if (!is_array($event)) {
@@ -82,8 +84,10 @@ class Vevent extends CalendarAppModel {
     /**
      * dropEvent
      *
+     * jpn:イベント削除
+     *
      * @param $uid
-     * @return
+     * @return Boolean
      */
     function dropEvent($uid){
         if (!$uid) {
@@ -99,6 +103,7 @@ class Vevent extends CalendarAppModel {
     /**
      * findByUid
      *
+     * jpn:uid指定で検索する
      * @param $uid
      * @return
      */
@@ -265,13 +270,13 @@ class Vevent extends CalendarAppModel {
      * @return
      */
     function _expandEventsDaily($start, $end, $event){
-        $eventStart = $event['Vevent']['dtstart'];
-        $eventEnd = $event['Vevent']['dtend'];
-        $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
+        $eventStart = $event['Vevent']['dtstart']; // DTSTART
+        $eventEnd = $event['Vevent']['dtend']; // DTEND
+        $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval']; // INTERVAL
 
-        $expandStartPoint; // 登録するイベント群の開始日時
+        $expandStartPoint; // jpn:登録するイベント群の開始日時
         $expandEndPoint;
-        $eventDiff = strtotime($eventEnd) - strtotime($eventStart); // 開始から終了までの差分秒
+        $eventDiff = strtotime($eventEnd) - strtotime($eventStart); // jpn:開始から終了までの差分秒
 
         if (strtotime($eventStart) < strtotime($start)) {
             $expandStartPoint = $this->_expandDate($start);
@@ -378,6 +383,9 @@ class Vevent extends CalendarAppModel {
             $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
 
             if ($byday) {
+                /**
+                 * RRULE::BYDAY
+                 */
                 if (!$first || in_array($strW, $byday)) {
                     $w = date('w', $this->_mta($s));
                     $day = $s['day'];
@@ -392,6 +400,8 @@ class Vevent extends CalendarAppModel {
                         $w = 0;
                     }
                     if ($w != 0) {
+                        // 
+                        // jpn:2週目からは日から土まで探索する
                         $day -= $w;
                     }
                     while($w < 6) {
@@ -407,6 +417,11 @@ class Vevent extends CalendarAppModel {
                         $w = date('w', $this->_mta($t));
                     }
                 } else {
+                    /**
+                     *
+                     * jpn:BYDAYの最初の設定日は曜日指定に関わらずイベント登録される
+                     *     例)毎週水曜日(BYDAY:WE)のイベントでイベント開始日が火曜日の場合、開始日のみ火曜日でもイベント登録される
+                     */
                     $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
                     $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
                     $events[] = $event['Vevent'];
@@ -427,11 +442,6 @@ class Vevent extends CalendarAppModel {
                         $day++;
                         $w = 0;
                     }
-                    /*
-                      if ($w != 0) {
-                      $day -= $w;
-                      }
-                    */
                     while($w < 6) {
                         $t = $s;
                         $t['day'] = $day;
@@ -474,9 +484,9 @@ class Vevent extends CalendarAppModel {
         $eventEnd = $event['Vevent']['dtend'];
         $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
 
-        $expandStartPoint; // 登録するイベント群の開始日時
+        $expandStartPoint;
         $expandEndPoint;
-        $eventDiff = strtotime($eventEnd) - strtotime($eventStart); // 開始から終了までの差分秒
+        $eventDiff = strtotime($eventEnd) - strtotime($eventStart);
 
         if (strtotime($eventStart) < strtotime($start)) {
             $expandStartPoint = $this->_expandDate($start);
@@ -599,14 +609,14 @@ class Vevent extends CalendarAppModel {
     /**
      * _expandEvent
      *
-     * @param $start, $end
+     * @param $start, $end, $event
      * @return
      */
-    function _expandEvent($start, $end, $event = null){
+    function _expandEvent($start, $end, $event){
         $start = date('Y-m-d', strtotime($start));
         $end = date('Y-m-d', strtotime($end));
         $daydiff = (strtotime($end) - strtotime($start)) / (3600 * 24);
-        $calendar = array();
+        $events = array();
         $startDate = $this->_expandDate($start);
         for ($i = 0; $i <= $daydiff; $i++) {
             $key = date('Y-m-d', mktime(0, 0, 0, $startDate['month'], ($startDate['day'] + $i), $startDate['year']));
@@ -624,12 +634,12 @@ class Vevent extends CalendarAppModel {
                 }
                 $sub['event_start'] = $eventStart;
                 $sub['event_end'] = $eventEnd;
-                $calendar[$key] = array($sub);
+                $events[$key] = array($sub);
             } else {
-                $calendar[$key] = array();
+                $events[$key] = array();
             }
         }
-        return $calendar;
+        return $events;
     }
 
     /**
