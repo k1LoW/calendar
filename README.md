@@ -25,6 +25,7 @@ This Plugin is personal test use.
 
 * DTSTART
 * DTEND
+* Daylong event
 * SUMMARY
 * DESCRIPTION
 * LOCATION

@@ -85,6 +85,18 @@ class Vevent extends CalendarAppModel {
             && preg_match('/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/', $event['Vevent']['dtstart'])
             && !empty($event['Vevent']['dtend'])
             && preg_match('/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/', $event['Vevent']['dtend'])) {
+            /**
+             * RFC2445:
+             * The "VEVENT" is also the calendar component used to specify an
+             * anniversary or daily reminder within a calendar. These events have a
+             * DATE value type for the "DTSTART" property instead of the default
+             * data type of DATE-TIME. If such a "VEVENT" has a "DTEND" property, it
+             * MUST be specified as a DATE value also. The anniversary type of
+             * "VEVENT" can span more than one date (i.e, "DTEND" property value is
+             * set to a calendar date after the "DTSTART" property value).
+             * jpn:終日イベントの場合は00:00:00を持たないで登録する
+             *     Calendar Pluginの場合はdaylongフラグでも可
+             */
             $event['Vevent']['daylong'] = true;
         }
         if (!$this->save($event)) {
@@ -623,6 +635,8 @@ class Vevent extends CalendarAppModel {
     /**
      * _expandEvent
      *
+     * jpn:複数の日に渡るようなイベントなどを展開する
+     *     終日イベントの整形も行う
      * @param $start, $end, $event
      * @return
      */
