@@ -37,10 +37,9 @@ class CalendarValidationRuleBehavior extends ModelBehavior {
 
     /**
      * checkByDay
-     * rrule_bydayのチェック
-     *
-     * @param  &$model
-     * @return
+     * 
+     * jpn:rrule_bydayのチェック
+     * @return Boolean
      */
     function checkByDay(&$model, $fields){
         $byday = explode(',', array_shift($fields));

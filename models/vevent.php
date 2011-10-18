@@ -282,7 +282,8 @@ class Vevent extends CalendarAppModel {
         if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + ($count * $interval), $s['year']);
+            $s['day'] = $s['day'] + ($count * $interval);
+            $endPoint = $this->_mta($s);
             if (strtotime($end) < $endPoint) {
                 $expandEndPoint = $this->_expandDate($end);
             } else {
@@ -303,14 +304,14 @@ class Vevent extends CalendarAppModel {
         $s = $expandStartPoint;
         $e = $expandEndPoint;
 
-        if(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+        if($this->_mta($s) === $this->_mta($e)) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
         }
-        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+        while($this->_mta($s) < $this->_mta($e)) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
 
             $events[] = $event['Vevent'];
 
@@ -344,7 +345,8 @@ class Vevent extends CalendarAppModel {
         if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'] + ($count * 7 * $interval), $s['year']);
+            $s['day'] = $s['day'] + ($count * 7 * $interval);
+            $endPoint = $this->_mta($s);
             if (strtotime($end) < $endPoint) {
                 $expandEndPoint = $this->_expandDate($end);
             } else {
@@ -365,25 +367,25 @@ class Vevent extends CalendarAppModel {
         $s = $expandStartPoint;
         $e = $expandEndPoint;
         $first = true;
-        if (mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+        if ($this->_mta($s) === $this->_mta($e)) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
             $first = false;
         }
 
-        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']))), 0, 2);
+        while($this->_mta($s) < $this->_mta($e)) {
+            $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
 
             if ($byday) {
                 if (!$first || in_array($strW, $byday)) {
-                    $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
+                    $w = date('w', $this->_mta($s));
                     $day = $s['day'];
                     if ($w == 6) {
-                        $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
+                        $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']) + $eventDiff);
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
                             $events[] = $event['Vevent'];
                         }
                         $day++;
@@ -393,29 +395,33 @@ class Vevent extends CalendarAppModel {
                         $day -= $w;
                     }
                     while($w < 6) {
-                        $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
+                        $t = $s;
+                        $t['day'] = $day;
+                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']) + $eventDiff);
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
                             $events[] = $event['Vevent'];
                         }
                         $day++;
-                        $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                        $w = date('w', $this->_mta($t));
                     }
                 } else {
-                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
                     $events[] = $event['Vevent'];
 
                     $day = $s['day'];
                     $day++;
-                    $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                    $w = date('w', $this->_mta($s));
 
                     if ($w === 6) {
-                        $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
+                        $t = $s;
+                        $t['day'] = $day;
+                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']) + $eventDiff);
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
                             $events[] = $event['Vevent'];
                         }
                         $day++;
@@ -427,19 +433,21 @@ class Vevent extends CalendarAppModel {
                       }
                     */
                     while($w < 6) {
-                        $strW = substr(strtoupper(date('D', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']))), 0, 2);
+                        $t = $s;
+                        $t['day'] = $day;
+                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']) + $eventDiff);
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
                             $events[] = $event['Vevent'];
                         }
                         $day++;
-                        $w = date('w', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $day, $s['year']));
+                        $w = date('w', $this->_mta($t));
                     }
                 }
             } else {
-                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
                 $events[] = $event['Vevent'];
             }
             $s['day'] += 7 * $interval;
@@ -479,7 +487,8 @@ class Vevent extends CalendarAppModel {
         if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'] + ($count * $interval), $s['day'], $s['year']);
+            $s['month'] = $s['month'] + ($count * $interval);
+            $endPoint = $this->_mta($s);
             if (strtotime($end) < $endPoint) {
                 $expandEndPoint = $this->_expandDate($end);
             } else {
@@ -492,14 +501,14 @@ class Vevent extends CalendarAppModel {
         $events = array();
         $s = $expandStartPoint;
         $e = $expandEndPoint;
-        if (mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+        if ($this->_mta($s) === $this->_mta($e)) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
         }
-        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+        while($this->_mta($s) < $this->_mta($e)) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
             $s['month'] += 1 * $interval;
         }
@@ -532,7 +541,8 @@ class Vevent extends CalendarAppModel {
         if (!empty($event['Vevent']['rrule_count'])) {
             $count = $event['Vevent']['rrule_count'];
             $s = $this->_expandDate($eventStart);
-            $endPoint = mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year'] + ($count * $interval));
+            $s['year'] = $s['year'] + ($count * $interval);
+            $endPoint = $this->_mta($s);
             if (strtotime($end) < $endPoint) {
                 $expandEndPoint = $this->_expandDate($end);
             } else {
@@ -552,14 +562,14 @@ class Vevent extends CalendarAppModel {
         $events = array();
         $s = $expandStartPoint;
         $e = $expandEndPoint;
-        if (mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) === mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+        if ($this->_mta($s) === $this->_mta($e)) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
         }
-        while(mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) < mktime($e['hour'], $e['min'], $e['second'], $e['month'], $e['day'], $e['year'])) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', mktime($s['hour'], $s['min'], $s['second'], $s['month'], $s['day'], $s['year']) + $eventDiff);
+        while($this->_mta($s) < $this->_mta($e)) {
+            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
             $s['year'] += 1 * $interval;
         }
@@ -649,6 +659,20 @@ class Vevent extends CalendarAppModel {
                        // 48 bits for "node"
                        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
                        );
+    }
+
+    /**
+     * _mta
+     * mktime() from array
+     *
+     * @param $a
+     * @return
+     */
+    function _mta($a){
+        if (!is_array($a) || count($a) !== 6) {
+            return false;
+        }
+        return mktime($a['hour'], $a['min'], $a['second'], $a['month'], $a['day'], $a['year']);
     }
 
     /**
