@@ -240,7 +240,7 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical(count($result['2011-11-15']), 2);
         $this->assertIdentical($result['2011-11-23'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['2011-11-23'][1]['Vevent']['event_start'], '2011-11-23 10:00:00');
-        $this->assertIdentical($result['2011-11-23'][1]['Vevent']['event_end'], '2011-11-23 23:59:59');
+        $this->assertIdentical($result['2011-11-23'][1]['Vevent']['event_end'], '2011-11-24 00:00:00');
         $this->assertIdentical($result['2011-11-24'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['2011-11-24'][0]['Vevent']['event_start'], '2011-11-24 00:00:00');
         $this->assertIdentical($result['2011-11-24'][0]['Vevent']['event_end'], '2011-11-24 12:00:00');
@@ -599,6 +599,45 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical($result['2011-10-21'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['2011-10-24'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['2011-10-28'][0]['Vevent']['uid'], $uid);
+    }
+
+    /**
+     * test_dayLong
+     *
+     * jpn:終日判定
+     */
+    function test_dayLong(){
+        $data = array(
+                      'dtstart' => '2011-11-01',
+                      'dtend' => '2011-11-02',
+                      'summary' => 'Allday',
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('2011-10-01', '2011-11-30');
+
+        $this->assertIdentical(count($result), 31 + 30);
+        $this->assertIdentical($result['2011-10-31'], array());
+        $this->assertIdentical($result['2011-11-01'][0]['Vevent']['uid'], $uid);
+        $this->assertTrue($result['2011-11-01'][0]['Vevent']['daylong']);
+        $this->assertIdentical($result['2011-11-02'], array());
+    }
+
+    /**
+     * test_invalidDayLong
+     *
+     * jpn:終日チェック時に時間が00:00:00でない場合はfalse
+     */
+    function test_invalidDayLong(){
+        $data = array(
+                      'dtstart' => '2011-11-01 00:10:00',
+                      'dtend' => '2011-11-02 00:00:00',
+                      'summary' => 'Allday',
+                      'daylong' => true,
+                      );
+        $result = $this->Vevent->setEvent($data);
+        $expected = array('daylong',
+                          );
+        $this->assertIdentical(array_keys($this->Vevent->validationErrors), $expected);
     }
 
     /**

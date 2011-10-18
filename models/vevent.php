@@ -25,6 +25,12 @@ class Vevent extends CalendarAppModel {
                                                                      'required' => true,
                                                                      )
                                            ),
+                          'daylong' => array(
+                                           'checkDaylong' => array(
+                                                                     'rule' => array('checkDaylong'),
+                                                                     'allowEmpty' => true,
+                                                                     )
+                                           ),
                           'summary' => array('notEmptySummary' => array(
                                                                         'rule' => array('notEmpty'),
                                                                         'required' => true,
@@ -74,6 +80,12 @@ class Vevent extends CalendarAppModel {
         }
         if (empty($event['Vevent']['id'])) {
             $event = $this->create($event);
+        }
+        if (!empty($event['Vevent']['dtstart'])
+            && preg_match('/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/', $event['Vevent']['dtstart'])
+            && !empty($event['Vevent']['dtend'])
+            && preg_match('/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/', $event['Vevent']['dtend'])) {
+            $event['Vevent']['daylong'] = true;
         }
         if (!$this->save($event)) {
             return false;
@@ -635,11 +647,17 @@ class Vevent extends CalendarAppModel {
                 $e = $this->_expandDate($eventEnd);
                 if (mktime(0,0,0,$e['month'],$e['day'],$e['year']) > strtotime($key)) {
                     $date = $this->_expandDate($key);
-                    $eventEnd = date('Y-m-d H:i:s', mktime(23, 59, 59, $date['month'], $date['day'], $date['year']));
+                    //
+                    // jpn: DTSTART及びDTENDは時刻なので次の日の00:00:00が$eventEndにはいる
+                    $eventEnd = date('Y-m-d H:i:s', mktime(0, 0, 0, $date['month'], $date['day'] + 1, $date['year']));
                 }
-                $sub['Vevent']['event_start'] = $eventStart;
-                $sub['Vevent']['event_end'] = $eventEnd;
-                $events[$key] = array($sub);
+                if ($eventStart < $eventEnd) {
+                    $sub['Vevent']['event_start'] = $eventStart;
+                    $sub['Vevent']['event_end'] = $eventEnd;
+                    $events[$key] = array($sub);
+                } else {
+                    $events[$key] = array();
+                }
             } else {
                 $events[$key] = array();
             }

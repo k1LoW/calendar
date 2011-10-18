@@ -37,7 +37,7 @@ class CalendarValidationRuleBehavior extends ModelBehavior {
 
     /**
      * checkByDay
-     * 
+     *
      * jpn:rrule_bydayのチェック
      * @return Boolean
      */
@@ -49,6 +49,26 @@ class CalendarValidationRuleBehavior extends ModelBehavior {
         }
         foreach ($byday as $value) {
             if (!in_array($value, array('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * checkDaylong
+     *
+     * jpn:終日フラグが立っている場合は日付は00:00:00でないといけない
+     * @param &$model, $fields
+     * @return
+     */
+    function checkDaylong(&$model, $fields){
+        $daylong = array_shift($fields);
+        $start = $model->data[$model->alias]['dtstart'];
+        $end = $model->data[$model->alias]['dtend'];
+        if ($daylong) {
+            if (date('His', strtotime($start)) != 0
+                || date('His', strtotime($start)) != 0) {
                 return false;
             }
         }
