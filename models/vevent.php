@@ -385,7 +385,6 @@ class Vevent extends CalendarAppModel {
         }
         while($this->_mta($s) < $this->_mta($e)) {
             $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
-
             if ($byday) {
                 /**
                  * RRULE::BYDAY
@@ -433,8 +432,7 @@ class Vevent extends CalendarAppModel {
                     $day = $s['day'];
                     $day++;
                     $w = date('w', $this->_mta($s));
-
-                    if ($w === 6) {
+                    if ($w == 6) {
                         $t = $s;
                         $t['day'] = $day;
                         $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
