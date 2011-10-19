@@ -426,7 +426,7 @@ class Vevent extends CalendarAppModel {
                         $day++;
                         $w = 0;
                     }
-                    if ($w != 0) {
+                    if ($w != 0 && !$first) {
                         //
                         // jpn:2週目からは日から土まで探索する
                         $day -= $w;
@@ -509,6 +509,7 @@ class Vevent extends CalendarAppModel {
         $eventStart = $event['Vevent']['dtstart'];
         $eventEnd = $event['Vevent']['dtend'];
         $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
+        $byday = empty($event['Vevent']['rrule_byday']) ? null : explode(',', $event['Vevent']['rrule_byday']);
 
         $expandStartPoint;
         $expandEndPoint;
@@ -537,16 +538,111 @@ class Vevent extends CalendarAppModel {
         $events = array();
         $s = $expandStartPoint;
         $e = $expandEndPoint;
+        $first = true;
+        if ($this->_expandDate($event['Vevent']['dtstart']) !== $s){
+            //
+            // jpn:表示範囲に最初の設定日が入っていない場合は$first = false
+            $first = false;
+        }
         if ($this->_mta($s) === $this->_mta($e)) {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
         }
         while($this->_mta($s) < $this->_mta($e)) {
+            $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
+            if ($byday) {
+                /**
+                 * RRULE::BYDAY
+                 */
+                if (!$first || in_array($strW, $byday)) {
+                    $w = date('w', $this->_mta($s));
+                    $day = $s['day'];
+                    if ($w == 6) {
+                        $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
+                        if (in_array($strW, $byday)) {
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
+                            $events[] = $event['Vevent'];
+                        }
+                        $day++;
+                        $w = 0;
+                    }
+                    if ($w != 0 && !$first) {
+                        //
+                        // jpn:2週目からは日から土まで探索する
+                        $day -= $w;
+                    }
+                    $month = substr(strtoupper(date('m', $this->_mta($s))), 0, 2);
+                    while($month == $s['month']) {
+                        $t = $s;
+                        $t['day'] = $day;
+                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
+                        if (in_array($strW, $byday)) {
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
+                            $events[] = $event['Vevent'];
+                        }
+                        $day++;
+                        $w = date('w', $this->_mta($t));
+                        $month = date('m', $this->_mta($t));
+                    }
+                } else {
+                    /**
+                     *
+                     * jpn:BYDAYの最初の設定日は曜日指定に関わらずイベント登録される
+                     *     例)毎週水曜日(BYDAY:WE)のイベントでイベント開始日が火曜日の場合、開始日のみ火曜日でもイベント登録される
+                     */
+                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
+                    $events[] = $event['Vevent'];
+
+                    $day = $s['day'];
+                    $day++;
+                    $w = date('w', $this->_mta($s));
+
+                    if ($w == 6) {
+                        $t = $s;
+                        $t['day'] = $day;
+                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
+                        if (in_array($strW, $byday)) {
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
+                            $events[] = $event['Vevent'];
+                        }
+                        $day++;
+                        $w = 0;
+                    }
+                    $month = substr(strtoupper(date('m', $this->_mta($s))), 0, 2);
+                    pr($month);
+                    while($month == $s['month']) {
+                        $t = $s;
+                        $t['day'] = $day;
+                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
+                        if (in_array($strW, $byday)) {
+                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
+                            $events[] = $event['Vevent'];
+                        }
+                        $day++;
+                        $w = date('w', $this->_mta($t));
+                        $month = date('m', $this->_mta($t));
+                    }
+                }
+
+            } else {
+                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
+                $events[] = $event['Vevent'];
+            }
+            $s['month'] += 1 * $interval;
+            $first = false;
+            /*
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
             $s['month'] += 1 * $interval;
+            */
         }
 
         return $events;
