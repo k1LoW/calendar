@@ -20,8 +20,8 @@ class AppSchema extends CakeSchema {
                            'rrule_freq' => array('type' => 'text', 'null' => true, 'default' => NULL),
                            'rrule_interval' => array('type' => 'text', 'null' => true, 'default' => NULL),
                            'rrule_byday' => array('type' => 'text', 'null' => true, 'default' => NULL),
-                           'rrule_bymonth' => array('type' => 'integer', 'null' => true, 'default' => NULL),
-                           'rrule_bymonthday' => array('type' => 'integer', 'null' => true, 'default' => NULL),
+                           'rrule_bymonth' => array('type' => 'text', 'null' => true, 'default' => NULL),
+                           'rrule_bymonthday' => array('type' => 'text', 'null' => true, 'default' => NULL),
                            'rrule_count' => array('type' => 'integer', 'null' => true, 'default' => NULL),
                            'rrule_until' => array('type' => 'timestamp', 'null' => true, 'default' => NULL),
 

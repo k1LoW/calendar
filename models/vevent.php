@@ -26,11 +26,11 @@ class Vevent extends CalendarAppModel {
                                                                      )
                                            ),
                           'daylong' => array(
-                                           'checkDaylong' => array(
+                                             'checkDaylong' => array(
                                                                      'rule' => array('checkDaylong'),
                                                                      'allowEmpty' => true,
                                                                      )
-                                           ),
+                                             ),
                           'summary' => array('notEmptySummary' => array(
                                                                         'rule' => array('notEmpty'),
                                                                         'required' => true,
@@ -52,6 +52,14 @@ class Vevent extends CalendarAppModel {
                                                                        'rule' => array('checkByDay'),
                                                                        'allowEmpty' => true,
                                                                        )),
+                          'rrule_bymonth' => array('checkByMonth' => array(
+                                                                           'rule' => array('checkByMonth'),
+                                                                           'allowEmpty' => true,
+                                                                           )),
+                          'rrule_bymonthday' => array('checkByMonthDay' => array(
+                                                                                 'rule' => array('checkByMonthDay'),
+                                                                                 'allowEmpty' => true,
+                                                                                 )),
                           );
 
     /**
@@ -573,7 +581,7 @@ class Vevent extends CalendarAppModel {
                         // jpn:2週目からは日から土まで探索する
                         $day -= $w;
                     }
-                    $month = substr(strtoupper(date('m', $this->_mta($s))), 0, 2);
+                    $month = date('m', $this->_mta($s));
                     while($month == $s['month']) {
                         $t = $s;
                         $t['day'] = $day;
@@ -614,7 +622,6 @@ class Vevent extends CalendarAppModel {
                         $w = 0;
                     }
                     $month = substr(strtoupper(date('m', $this->_mta($s))), 0, 2);
-                    pr($month);
                     while($month == $s['month']) {
                         $t = $s;
                         $t['day'] = $day;
@@ -637,12 +644,6 @@ class Vevent extends CalendarAppModel {
             }
             $s['month'] += 1 * $interval;
             $first = false;
-            /*
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-            $events[] = $event['Vevent'];
-            $s['month'] += 1 * $interval;
-            */
         }
 
         return $events;
@@ -659,6 +660,9 @@ class Vevent extends CalendarAppModel {
         $eventStart = $event['Vevent']['dtstart'];
         $eventEnd = $event['Vevent']['dtend'];
         $interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval'];
+        $byday = empty($event['Vevent']['rrule_byday']) ? null : explode(',', $event['Vevent']['rrule_byday']);
+        $bymonth = empty($event['Vevent']['rrule_bymonth']) ? null : explode(',', $event['Vevent']['rrule_bymonth']);
+        $bymonthday = empty($event['Vevent']['rrule_bymonthday']) ? null : explode(',', $event['Vevent']['rrule_bymonthday']);
 
         $expandStartPoint; // 登録するイベント群の開始日時
         $expandEndPoint;
@@ -694,16 +698,110 @@ class Vevent extends CalendarAppModel {
         $events = array();
         $s = $expandStartPoint;
         $e = $expandEndPoint;
+        $first = true;
+        if ($this->_expandDate($event['Vevent']['dtstart']) !== $s){
+            //
+            // jpn:表示範囲に最初の設定日が入っていない場合は$first = false
+            $first = false;
+        }
         if ($this->_mta($s) === $this->_mta($e)) {
             $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
             $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
             $events[] = $event['Vevent'];
         }
         while($this->_mta($s) < $this->_mta($e)) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-            $events[] = $event['Vevent'];
+            $year = $s['year'];
+            $month = $s['month'];
+            if ($bymonth) {
+                /**
+                 * RRULE::BYMONTH
+                 */
+                if (!$first || in_array($month, $bymonth)) {
+                    $month = $s['month'];
+                    $year = date('Y', $this->_mta($s));
+                    if ($month != 1 && !$first) {
+                        //
+                        // jpn:2周目からは1月から探索する
+                        $month = 1;
+                    }
+                    while($year == $s['year']) {
+                        $t = $s;
+                        $t['month'] = $month;
+                        if (in_array($month, $bymonth)) {
+                            $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
+                            if ($byday) {
+                                /**
+                                 * RRULE::BYDAY
+                                 */
+                                if (!$first || in_array($strW, $byday)) {
+                                    $w = date('w', $this->_mta($t));
+                                    $day = $t['day'];
+                                    if (!$first) {
+                                        //
+                                        // jpn:2周目からは1日目から探索する
+                                        $day = 1;
+                                    }
+                                    $tmonth = date('m', $this->_mta($t));
+                                    while($tmonth == $t['month']) {
+                                        $tt = $t;
+                                        $tt['day'] = $day;
+                                        $strW = substr(strtoupper(date('D', $this->_mta($tt))), 0, 2);
+                                        if (in_array($strW, $byday)) {
+                                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($tt));
+                                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($tt) + $eventDiff);
+                                            $events[] = $event['Vevent'];
+                                        }
+                                        $day++;
+                                        $w = date('w', $this->_mta($tt));
+                                        $tmonth = date('m', $this->_mta($tt));
+                                    }
+                                } else {
+                                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
+                                    $events[] = $event['Vevent'];
+                                }
+                            } else {
+                                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
+                                $events[] = $event['Vevent'];
+                            }
+                        }
+                        $month++;
+                        $year = date('Y', $this->_mta($t));
+                        $first = false;
+                    }
+                } else {
+                    /**
+                     *
+                     * jpn:BYMONTHの最初の設定日は指定に関わらずイベント登録される
+                     */
+                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
+                    $events[] = $event['Vevent'];
+                    while($year == $s['year']) {
+                        $t = $s;
+                        $t['month'] = $month;
+                        if (in_array($month, $bymonth)) {
+                            if ($byday) {
+
+                            } else {
+                                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
+                                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
+                                $events[] = $event['Vevent'];
+                            }
+                        }
+                        $month++;
+                        $year = date('Y', $this->_mta($t));
+                    }
+                }
+            } else {
+                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
+                $events[] = $event['Vevent'];
+            }
+
             $s['year'] += 1 * $interval;
+            $first = false;
         }
 
         return $events;

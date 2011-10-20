@@ -197,7 +197,86 @@ class VeventTestCase extends CakeTestCase{
         $expected = array('rrule_byday',
                           );
         $this->assertIdentical(array_keys($this->Vevent->validationErrors), $expected);
+
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 10:00:00',
+                      'summary' => 'yearlyなのにbymonthもbymonthdayもない',
+                      'rrule_freq' => 'yearly',
+                      'rrule_count' => 10,
+                      'rrule_byday' => 'TH'
+                      );
+        $result = $this->Vevent->setEvent($data);
+        $expected = array('rrule_byday',
+                          );
+        $this->assertIdentical(array_keys($this->Vevent->validationErrors), $expected);
     }
+
+    /**
+     * test_checkByMonth
+     *
+     * @return
+     */
+    function test_checkByMonth(){
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 10:00:00',
+                      'summary' => 'rrule_frewがdaily',
+                      'rrule_freq' => 'daily',
+                      'rrule_count' => 10,
+                      'rrule_bymonth' => '2,4'
+                      );
+        $result = $this->Vevent->setEvent($data);
+        $expected = array('rrule_bymonth',
+                          );
+        $this->assertIdentical(array_keys($this->Vevent->validationErrors), $expected);
+    }
+
+    /**
+     * test_checkByMonthDay
+     *
+     * @return
+     */
+    function test_checkByMonthDay(){
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 10:00:00',
+                      'summary' => 'rrule_frewがdaily',
+                      'rrule_freq' => 'daily',
+                      'rrule_count' => 10,
+                      'rrule_bymonthday' => '2,4'
+                      );
+        $result = $this->Vevent->setEvent($data);
+        $expected = array('rrule_bymonthday',
+                          );
+        $this->assertIdentical(array_keys($this->Vevent->validationErrors), $expected);
+
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 10:00:00',
+                      'summary' => 'rrule_frewがdaily',
+                      'rrule_freq' => 'yearly',
+                      'rrule_count' => 10,
+                      'rrule_bymonthday' => '2,4'
+                      );
+        $result = $this->Vevent->setEvent($data);
+        $expected = array('rrule_bymonthday',
+                          );
+        $this->assertIdentical(array_keys($this->Vevent->validationErrors), $expected);
+
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-15 10:00:00',
+                      'summary' => 'rrule_frewがdaily',
+                      'rrule_freq' => 'yearly',
+                      'rrule_count' => 10,
+                      'rrule_bymonth' => '1,6',
+                      'rrule_bymonthday' => '2,4'
+                      );
+        $result = $this->Vevent->setEvent($data);
+        $this->assertTrue($result);
+    }
+
 
     /**
      * test_DropEvent
@@ -600,6 +679,62 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical($result['2011-10-24'][0]['Vevent']['uid'], $uid);
         $this->assertIdentical($result['2011-10-28'][0]['Vevent']['uid'], $uid);
     }
+
+    /**
+     * test_freqYearlyBymonth
+     *
+     */
+    function test_freqYearlyBymonth(){
+        $data = array(
+                      'dtstart' => '1997-10-15 10:00:00',
+                      'dtend' => '1997-10-15 12:00:00',
+                      'summary' => 'bymonth',
+                      'rrule_freq' => 'yearly',
+                      'rrule_bymonth' => '2,3',
+                      );
+        $uid = $this->Vevent->setEvent($data);
+
+        $result = $this->Vevent->findByRange('1997-01-01', '2000-12-31');
+        $this->assertIdentical($result['1997-02-15'], array());
+        $this->assertIdentical($result['1997-03-15'], array());
+        $this->assertIdentical($result['1997-10-14'], array());
+        $this->assertIdentical($result['1997-10-15'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-02-15'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-15'][0]['Vevent']['uid'], $uid);
+    }
+
+    /**
+     * test_freqYearlyBymonth1_3BydayWe
+     *
+     */
+    function test_freqYearlyBymonth1_3BydayWe(){
+        $data = array(
+                      'dtstart' => '1997-01-15 10:00:00',
+                      'dtend' => '1997-01-15 12:00:00',
+                      'summary' => 'bymonth',
+                      'rrule_freq' => 'yearly',
+                      'rrule_bymonth' => '1,3',
+                      'rrule_byday' => 'WE',
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-01-01', '2000-12-31');
+        $this->assertIdentical($result['1997-01-15'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-01-22'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-01-29'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-05'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-12'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-19'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-26'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-07'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-14'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-21'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-28'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-04'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-11'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-18'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-25'][0]['Vevent']['uid'], $uid);
+    }
+
 
     /**
      * test_dayLong
@@ -1204,6 +1339,26 @@ class VeventTestCase extends CakeTestCase{
      * are specified, the day is gotten from DTSTART
      */
     function test_RFC2445freqYearlyCount10Bymonth6_7() {
+        $data = array(
+                      'dtstart' => '1997-06-10 09:00:00',
+                      'dtend' => '1997-06-10 12:00:00',
+                      'summary' => 'RFC2445',
+                      'rrule_freq' => 'yearly',
+                      'rrule_count' => 10,
+                      'rrule_bymonth' => '6,7'
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-06-01', '2001-07-31');
+        $this->assertIdentical($result['1997-06-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-07-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-06-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-07-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-06-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-07-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2000-06-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2000-07-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2001-06-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2001-07-10'][0]['Vevent']['uid'], $uid);
     }
 
     /**
@@ -1283,6 +1438,27 @@ class VeventTestCase extends CakeTestCase{
      * ...
      */
     function test_RFC2445freqYearlyBymonthBydayTh() {
+         $data = array(
+                      'dtstart' => '1997-03-13 09:00:00',
+                      'dtend' => '1997-03-13 12:00:00',
+                      'summary' => 'RFC2445',
+                      'rrule_freq' => 'yearly',
+                      'rrule_byday' => 'TH',
+                      'rrule_bymonth' => '3'
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-03-01', '1999-03-31');
+        $this->assertIdentical($result['1997-03-13'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-20'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-27'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-05'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-12'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-19'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-26'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-03-04'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-03-11'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-03-18'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-03-25'][0]['Vevent']['uid'], $uid);
     }
 
     /**
