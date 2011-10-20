@@ -1477,6 +1477,41 @@ class VeventTestCase extends CakeTestCase{
      * ...
      */
     function test_RFC2445freqYearlyBydaythBymonth6_7_8() {
+         $data = array(
+                      'dtstart' => '1997-06-05 09:00:00',
+                      'dtend' => '1997-06-05 12:00:00',
+                      'summary' => 'RFC2445',
+                      'rrule_freq' => 'yearly',
+                      'rrule_byday' => 'TH',
+                      'rrule_bymonth' => '6,7,8'
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-06-01', '2000-08-31');
+        $this->assertIdentical($result['1997-06-05'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-06-12'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-06-19'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-06-26'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-07-03'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-07-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-07-17'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-07-24'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-07-31'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-08-07'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-08-14'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-08-21'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-08-28'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-06-04'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-06-11'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-06-18'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-06-25'][0]['Vevent']['uid'], $uid);
+
+        $this->assertIdentical($result['1998-07-02'][0]['Vevent']['uid'], $uid);
+
+        $this->assertIdentical($result['1998-08-06'][0]['Vevent']['uid'], $uid);
+
+        $this->assertIdentical($result['1999-06-03'][0]['Vevent']['uid'], $uid);
+
+        $this->assertIdentical($result['1999-07-01'][0]['Vevent']['uid'], $uid);
     }
 
     /**
