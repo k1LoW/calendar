@@ -1374,6 +1374,27 @@ class VeventTestCase extends CakeTestCase{
      *     (2003 9:00 AM EST)January 10;February 10;March 10
      */
     function test_RFC2445freqYearlyInterval2Count10Bymonth1_2_3() {
+        $data = array(
+                      'dtstart' => '1997-03-10 09:00:00',
+                      'dtend' => '1997-03-10 12:00:00',
+                      'summary' => 'RFC2445',
+                      'rrule_freq' => 'yearly',
+                      'rrule_interval' => 2,
+                      'rrule_count' => 10,
+                      'rrule_bymonth' => '1,2,3'
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-03-01', '2003-03-31');
+        $this->assertIdentical($result['1997-03-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-01-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-02-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1999-03-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2001-01-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2001-02-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2001-03-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2003-01-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2003-02-10'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2003-03-10'][0]['Vevent']['uid'], $uid);
     }
 
     /**

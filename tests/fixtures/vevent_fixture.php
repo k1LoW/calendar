@@ -9,6 +9,7 @@ class VeventFixture extends CakeTestFixture {
                         'dtstart' => array('type' => 'timestamp', 'null' => true, 'default' => NULL),
                         'dtend' => array('type' => 'timestamp', 'null' => true, 'default' => NULL),
                         'daylong' => array('type' => 'boolean', 'null' => true, 'default' => NULL),
+                        'exdate' => array('type' => 'text', 'null' => true, 'default' => NULL),
 
                         'rrule_freq' => array('type' => 'text', 'null' => true, 'default' => NULL),
                         'rrule_interval' => array('type' => 'text', 'null' => true, 'default' => NULL),
