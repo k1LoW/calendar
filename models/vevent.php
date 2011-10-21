@@ -235,8 +235,11 @@ class Vevent extends CalendarAppModel {
         foreach ($result2 as $event) {
             $e = $this->_expandEvents($start, $end, $event);
             foreach ($e as $ee) {
-                $eventStart = $ee['event_start'];
-                $eventEnd = $ee['event_end'];
+                if (empty($ee['Vevent'])) {
+                    $ee = array('Vevent' => $ee);
+                }
+                $eventStart = $ee['Vevent']['event_start'];
+                $eventEnd = $ee['Vevent']['event_end'];
                 if (strtotime($eventStart) < strtotime($start)) {
                     $eventStart = $start;
                 }
@@ -342,16 +345,10 @@ class Vevent extends CalendarAppModel {
         $e = $expandEndPoint;
 
         if($this->_mta($s) === $this->_mta($e)) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-            $events[] = $event['Vevent'];
+            $events = $this->_pushEvent($events, $event, $s, $eventDiff);
         }
         while($this->_mta($s) < $this->_mta($e)) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-
-            $events[] = $event['Vevent'];
-
+            $events = $this->_pushEvent($events, $event, $s, $eventDiff);
             $s['day'] += 1 * $interval;
         }
         return $events;
@@ -410,9 +407,7 @@ class Vevent extends CalendarAppModel {
             $first = false;
         }
         if ($this->_mta($s) === $this->_mta($e)) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-            $events[] = $event['Vevent'];
+            $events = $this->_pushEvent($events, $event, $s, $eventDiff);
             $first = false;
         }
         while($this->_mta($s) < $this->_mta($e)) {
@@ -427,9 +422,7 @@ class Vevent extends CalendarAppModel {
                     if ($w == 6) {
                         $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-                            $events[] = $event['Vevent'];
+                            $events = $this->_pushEvent($events, $event, $s, $eventDiff);
                         }
                         $day++;
                         $w = 0;
@@ -444,9 +437,7 @@ class Vevent extends CalendarAppModel {
                         $t['day'] = $day;
                         $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                            $events[] = $event['Vevent'];
+                            $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                         }
                         $day++;
                         $w = date('w', $this->_mta($t));
@@ -457,9 +448,7 @@ class Vevent extends CalendarAppModel {
                      * jpn:BYDAYの最初の設定日は曜日指定に関わらずイベント登録される
                      *     例)毎週水曜日(BYDAY:WE)のイベントでイベント開始日が火曜日の場合、開始日のみ火曜日でもイベント登録される
                      */
-                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-                    $events[] = $event['Vevent'];
+                    $events = $this->_pushEvent($events, $event, $s, $eventDiff);
 
                     $day = $s['day'];
                     $day++;
@@ -469,9 +458,7 @@ class Vevent extends CalendarAppModel {
                         $t['day'] = $day;
                         $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                            $events[] = $event['Vevent'];
+                            $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                         }
                         $day++;
                         $w = 0;
@@ -481,18 +468,14 @@ class Vevent extends CalendarAppModel {
                         $t['day'] = $day;
                         $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                            $events[] = $event['Vevent'];
+                            $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                         }
                         $day++;
                         $w = date('w', $this->_mta($t));
                     }
                 }
             } else {
-                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-                $events[] = $event['Vevent'];
+                $events = $this->_pushEvent($events, $event, $s, $eventDiff);
             }
             $s['day'] += 7 * $interval;
             $first = false;
@@ -553,9 +536,7 @@ class Vevent extends CalendarAppModel {
             $first = false;
         }
         if ($this->_mta($s) === $this->_mta($e)) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-            $events[] = $event['Vevent'];
+            $events = $this->_pushEvent($events, $event, $s, $eventDiff);
         }
         while($this->_mta($s) < $this->_mta($e)) {
             $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
@@ -569,9 +550,7 @@ class Vevent extends CalendarAppModel {
                     if ($w == 6) {
                         $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-                            $events[] = $event['Vevent'];
+                            $events = $this->_pushEvent($events, $event, $s, $eventDiff);
                         }
                         $day++;
                         $w = 0;
@@ -587,9 +566,7 @@ class Vevent extends CalendarAppModel {
                         $t['day'] = $day;
                         $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                            $events[] = $event['Vevent'];
+                            $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                         }
                         $day++;
                         $w = date('w', $this->_mta($t));
@@ -601,9 +578,7 @@ class Vevent extends CalendarAppModel {
                      * jpn:BYDAYの最初の設定日は曜日指定に関わらずイベント登録される
                      *     例)毎週水曜日(BYDAY:WE)のイベントでイベント開始日が火曜日の場合、開始日のみ火曜日でもイベント登録される
                      */
-                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-                    $events[] = $event['Vevent'];
+                    $events = $this->_pushEvent($events, $event, $s, $eventDiff);
 
                     $day = $s['day'];
                     $day++;
@@ -614,9 +589,7 @@ class Vevent extends CalendarAppModel {
                         $t['day'] = $day;
                         $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                            $events[] = $event['Vevent'];
+                            $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                         }
                         $day++;
                         $w = 0;
@@ -627,9 +600,7 @@ class Vevent extends CalendarAppModel {
                         $t['day'] = $day;
                         $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
                         if (in_array($strW, $byday)) {
-                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                            $events[] = $event['Vevent'];
+                            $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                         }
                         $day++;
                         $w = date('w', $this->_mta($t));
@@ -638,9 +609,7 @@ class Vevent extends CalendarAppModel {
                 }
 
             } else {
-                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-                $events[] = $event['Vevent'];
+                $events = $this->_pushEvent($events, $event, $s, $eventDiff);
             }
             $s['month'] += 1 * $interval;
             $first = false;
@@ -705,9 +674,7 @@ class Vevent extends CalendarAppModel {
             $first = false;
         }
         if ($this->_mta($s) === $this->_mta($e)) {
-            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-            $events[] = $event['Vevent'];
+            $events = $this->_pushEvent($events, $event, $s, $eventDiff);
         }
         while($this->_mta($s) < $this->_mta($e)) {
             $year = $s['year'];
@@ -747,23 +714,17 @@ class Vevent extends CalendarAppModel {
                                         $tt['day'] = $day;
                                         $strW = substr(strtoupper(date('D', $this->_mta($tt))), 0, 2);
                                         if (in_array($strW, $byday)) {
-                                            $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($tt));
-                                            $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($tt) + $eventDiff);
-                                            $events[] = $event['Vevent'];
+                                            $events = $this->_pushEvent($events, $event, $tt, $eventDiff);
                                         }
                                         $day++;
                                         $w = date('w', $this->_mta($tt));
                                         $tmonth = date('m', $this->_mta($tt));
                                     }
                                 } else {
-                                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                                    $events[] = $event['Vevent'];
+                                    $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                                 }
                             } else {
-                                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                                $events[] = $event['Vevent'];
+                                $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                             }
                         }
                         $month++;
@@ -775,19 +736,16 @@ class Vevent extends CalendarAppModel {
                      *
                      * jpn:BYMONTHの最初の設定日は指定に関わらずイベント登録される
                      */
-                    $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-                    $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-                    $events[] = $event['Vevent'];
+                    $events = $this->_pushEvent($events, $event, $s, $eventDiff);
+
                     while($year == $s['year']) {
                         $t = $s;
                         $t['month'] = $month;
                         if (in_array($month, $bymonth)) {
                             if ($byday) {
-
+                                // @todo
                             } else {
-                                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($t));
-                                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($t) + $eventDiff);
-                                $events[] = $event['Vevent'];
+                                $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                             }
                         }
                         $month++;
@@ -795,9 +753,7 @@ class Vevent extends CalendarAppModel {
                     }
                 }
             } else {
-                $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
-                $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $eventDiff);
-                $events[] = $event['Vevent'];
+                $events = $this->_pushEvent($events, $event, $s, $eventDiff);
             }
 
             $s['year'] += 1 * $interval;
@@ -870,6 +826,19 @@ class Vevent extends CalendarAppModel {
                 $events[$key] = array();
             }
         }
+        return $events;
+    }
+
+    /**
+     * _pushEvent
+     *
+     * @param $events, $event, $s, $diff
+     * @return
+     */
+    function _pushEvent($events, $event, $s, $diff){
+        $event['Vevent']['event_start'] = date('Y-m-d H:i:s', $this->_mta($s));
+        $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $diff);
+        $events[] = $event;
         return $events;
     }
 
