@@ -38,6 +38,7 @@ THIS PLUGIN IS PERSONAL TEST USE.
 
 ## TODO ##
 
+* Refactor code.
 * More test.
 * Date filter. (ex. holiday)
 * Extra attribute support. (ex. user_id)

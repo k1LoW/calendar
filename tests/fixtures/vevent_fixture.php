@@ -43,7 +43,7 @@ class VeventFixture extends CakeTestFixture {
                                'rrule_bymonthday' => null,
                                'rrule_count' => null,
                                'rrule_until' => null,
-                               'location' => 'Fukuoka',
+                               'location' => 'Osaka',
                                'categories' => '',
                                'summary' => 'PHPMatsuri 2011',
                                'description' => 'PHPMatsuri 2011',

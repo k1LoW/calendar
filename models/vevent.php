@@ -102,7 +102,7 @@ class Vevent extends CalendarAppModel {
              * MUST be specified as a DATE value also. The anniversary type of
              * "VEVENT" can span more than one date (i.e, "DTEND" property value is
              * set to a calendar date after the "DTSTART" property value).
-             * jpn:終日イベントの場合は00:00:00を持たないで登録する
+             * jpn:終日イベントの場合はsetEvent()に渡す値を00:00:00を持たないで登録すると終日判定する
              *     Calendar Pluginの場合はdaylongフラグでも可
              */
             $event['Vevent']['daylong'] = true;
@@ -594,7 +594,7 @@ class Vevent extends CalendarAppModel {
                         $day++;
                         $w = 0;
                     }
-                    $month = substr(strtoupper(date('m', $this->_mta($s))), 0, 2);
+                    $month = date('m', $this->_mta($s));
                     while($month == $s['month']) {
                         $t = $s;
                         $t['day'] = $day;
@@ -743,7 +743,20 @@ class Vevent extends CalendarAppModel {
                         $t['month'] = $month;
                         if (in_array($month, $bymonth)) {
                             if ($byday) {
-                                // @todo
+                                $w = date('w', $this->_mta($t));
+                                $day = $t['day'];
+                                $tmonth = date('m', $this->_mta($t));
+                                while($tmonth == $t['month']) {
+                                    $tt = $t;
+                                    $tt['day'] = $day;
+                                    $strW = substr(strtoupper(date('D', $this->_mta($tt))), 0, 2);
+                                    if (in_array($strW, $byday)) {
+                                        $events = $this->_pushEvent($events, $event, $tt, $eventDiff);
+                                    }
+                                    $day++;
+                                    $w = date('w', $this->_mta($tt));
+                                    $tmonth = date('m', $this->_mta($tt));
+                                }
                             } else {
                                 $events = $this->_pushEvent($events, $event, $t, $eventDiff);
                             }
