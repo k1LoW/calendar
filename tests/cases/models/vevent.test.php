@@ -735,6 +735,40 @@ class VeventTestCase extends CakeTestCase{
         $this->assertIdentical($result['1998-03-25'][0]['Vevent']['uid'], $uid);
     }
 
+    /**
+     * test_freqYearlyBymonth1_3BydayWeCount14
+     *
+     */
+    function test_freqYearlyBymonth1_3BydayWeCount14(){
+        $data = array(
+                      'dtstart' => '1997-01-15 10:00:00',
+                      'dtend' => '1997-01-15 12:00:00',
+                      'summary' => 'bymonth',
+                      'rrule_freq' => 'yearly',
+                      'rrule_bymonth' => '2,3',
+                      'rrule_byday' => 'WE',
+                      'rrule_count' => 14,
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-01-01', '2000-12-31');
+        $this->assertIdentical($result['1997-01-15'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-01-22'], array());
+        $this->assertIdentical($result['1997-02-05'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-02-12'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-02-19'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-02-26'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-05'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-12'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-19'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1997-03-26'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-07'], array());
+        $this->assertIdentical($result['1998-02-04'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-02-11'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-02-18'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-02-25'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-04'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-03-11'], array());
+    }
 
     /**
      * test_dayLong

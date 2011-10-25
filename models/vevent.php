@@ -615,6 +615,11 @@ class Vevent extends CalendarAppModel {
             $first = false;
         }
 
+        if (!empty($event['Vevent']['rrule_count'])) {
+            // @todo refactor code
+            return array_slice($events, 0, $event['Vevent']['rrule_count']);
+        }
+
         return $events;
     }
 
@@ -743,8 +748,16 @@ class Vevent extends CalendarAppModel {
                         $t['month'] = $month;
                         if (in_array($month, $bymonth)) {
                             if ($byday) {
+                                /**
+                                 * RRULE::BYDAY
+                                 */
                                 $w = date('w', $this->_mta($t));
                                 $day = $t['day'];
+                                if (!$first) {
+                                    //
+                                    // jpn:次月からは1日目から探索する
+                                    $day = 1;
+                                }
                                 $tmonth = date('m', $this->_mta($t));
                                 while($tmonth == $t['month']) {
                                     $tt = $t;
@@ -763,6 +776,7 @@ class Vevent extends CalendarAppModel {
                         }
                         $month++;
                         $year = date('Y', $this->_mta($t));
+                        $first = false;
                     }
                 }
             } else {
@@ -771,6 +785,11 @@ class Vevent extends CalendarAppModel {
 
             $s['year'] += 1 * $interval;
             $first = false;
+        }
+
+        if (!empty($event['Vevent']['rrule_count'])) {
+            // @todo refactor code
+            return array_slice($events, 0, $event['Vevent']['rrule_count']);
         }
 
         return $events;
