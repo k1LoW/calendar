@@ -616,6 +616,31 @@ class VeventTestCase extends CakeTestCase{
     }
 
     /**
+     * test_freqMonthlyCount3BydayWe
+     *
+     */
+    function test_freqMonthlyCount3BydayWe(){
+
+        $data = array(
+                      'dtstart' => '2011-11-14 10:00:00',
+                      'dtend' => '2011-11-14 12:00:00',
+                      'summary' => 'test_freqMonthlyCount3BydayWe',
+                      'rrule_freq' => 'monthly',
+                      'rrule_count' => 3,
+                      'rrule_byday' => 'WE',
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('2011-11-01', '2012-02-28');
+
+        $this->assertIdentical(count($result), (30 + 31 + 31 + 28));
+        $this->assertIdentical($result['2011-11-13'], array());
+        $this->assertIdentical($result['2011-11-14'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2011-11-16'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2011-11-23'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['2011-11-30'], array());
+    }
+
+    /**
      * test_freqYearlyCount3Interval2
      *
      */
@@ -738,6 +763,7 @@ class VeventTestCase extends CakeTestCase{
     /**
      * test_freqYearlyBymonth1_3BydayWeCount14
      *
+     * jpn: 最初の日付は条件に合致しなくても対象にする
      */
     function test_freqYearlyBymonth1_3BydayWeCount14(){
         $data = array(
