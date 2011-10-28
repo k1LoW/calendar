@@ -59,11 +59,43 @@ class VeventTestCase extends CakeTestCase{
     }
 
     /**
+     * test_setEventUpdateAndFindByUid
+     *
+     * jpn:正常にイベントが更新でき、登録したデータを取得できる
+     */
+    function test_setEventUpdateAndFindByUid(){
+        $data = array(
+                      'dtstart' => '2011-11-14 00:00:00',
+                      'dtend' => '2011-11-15 00:00:00',
+                      'summary' => 'テストイベント',
+                      'description' => 'テストイベント\nテストイベント'
+                      );
+        $uid = $this->Vevent->setEvent($data);
+
+        $data = array(
+                      'uid' => $uid,
+                      'dtstart' => '2011-11-14 00:00:00',
+                      'dtend' => '2011-11-15 00:00:00',
+                      'summary' => 'テストイベント更新',
+                      'description' => 'テストイベント\nテストイベント'
+                      );
+        $uid = $this->Vevent->setEvent($data);
+
+        $result = $this->Vevent->findByUid($uid);
+        $this->assertIdentical($result['Vevent']['summary'], 'テストイベント更新');
+    }
+
+
+    /**
      * test_invalidData
      *
      * jpn:足りないデータがある場合はエラー
      */
     function test_invalidData(){
+        $data = 'invalid';
+        $result = $this->Vevent->setEvent($data);
+        $this->assertIdentical($result, false);
+
         $data = array(
                       );
         $result = $this->Vevent->setEvent($data);
