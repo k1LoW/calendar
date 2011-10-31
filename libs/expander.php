@@ -8,8 +8,6 @@ class Expander{
 
     private $event;
     private $events;
-    private $start;
-    private $end;
     private $eventStart; // DTSTART
     private $eventEnd; // DTEND
     private $freq; // FREQ
@@ -24,6 +22,8 @@ class Expander{
     private $expandEndPoint;
     private $eventDiff; // jpn:開始から終了までの差分秒
 
+    private $first;
+
     /**
      * expandEvents
      *
@@ -33,8 +33,6 @@ class Expander{
     public function expandEvents($start, $end, $event){
         $this->event = $event;
         $this->events = array();
-        $this->start = $start;
-        $this->end = $end;
         $this->eventStart = $event['Vevent']['dtstart'];
         $this->eventEnd = $event['Vevent']['dtend'];
         $this->freq = $event['Vevent']['rrule_freq'];
@@ -47,8 +45,10 @@ class Expander{
 
         $this->eventDiff = strtotime($this->eventEnd) - strtotime($this->eventStart);
 
-        if (strtotime($this->eventStart) < strtotime($this->start)) {
-            $this->expandStartPoint = $this->_expandDate($this->start);
+        $this->first = true;
+
+        if (strtotime($this->eventStart) < strtotime($start)) {
+            $this->expandStartPoint = $this->_expandDate($start);
         } else {
             $this->expandStartPoint = $this->_expandDate($this->eventStart);
         }
@@ -70,20 +70,33 @@ class Expander{
                 break;
             }
             $endPoint = $this->_mta($s);
-            if (strtotime($this->end) < $endPoint) {
-                $this->expandEndPoint = $this->_expandDate($this->end);
+            if (strtotime($end) < $endPoint) {
+                $this->expandEndPoint = $this->_expandDate($end);
             } else {
                 $this->expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
             }
         } elseif (!empty($this->until)) {
             $endPoint = strtotime($this->until);
-            if (strtotime($this->end) < $endPoint) {
-                $this->expandEndPoint = $this->_expandDate($this->end);
+            if (strtotime($end) < $endPoint) {
+                $this->expandEndPoint = $this->_expandDate($end);
             } else {
                 $this->expandEndPoint = $this->_expandDate(date('Y-m-d H:i:s', $endPoint));
             }
         } else {
-            $this->expandEndPoint = $this->_expandDate($this->end);
+            $this->expandEndPoint = $this->_expandDate($end);
+        }
+
+        if ($this->_expandDate($this->eventStart) !== $this->expandStartPoint){
+            //
+            // jpn:表示範囲に最初の設定日が入っていない場合は$this->first = false
+            $this->first = false;
+        }
+
+        if ($this->_mta($this->expandStartPoint) === $this->_mta($this->expandEndPoint)) {
+            //
+            // jpn:開始ポイントと終了ポイントが同じ場合は1イベントしか登録せず終了
+            $this->_pushEvent($s);
+            $this->first = false;
         }
 
         $events = array();
@@ -101,6 +114,9 @@ class Expander{
             $this->_expandEventsYearly();
             break;
         }
+
+        $this->_checkCount();
+
         return $this->events;
     }
 
@@ -115,14 +131,10 @@ class Expander{
         $s = $this->expandStartPoint;
         $e = $this->expandEndPoint;
 
-        if($this->_mta($s) === $this->_mta($e)) {
-            $this->_pushEvent($s);
-        }
         while($this->_mta($s) < $this->_mta($e)) {
             $this->_pushEvent($s);
             $s['day'] += 1 * $this->interval;
         }
-        return $this->events;
     }
 
     /**
@@ -134,34 +146,22 @@ class Expander{
     private function _expandEventsWeekly(){
         $s = $this->expandStartPoint;
         $e = $this->expandEndPoint;
-        $first = true;
-        if ($this->_expandDate($this->eventStart) !== $s){
-            //
-            // jpn:表示範囲に最初の設定日が入っていない場合は$first = false
-            $first = false;
-        }
-        if ($this->_mta($s) === $this->_mta($e)) {
-            $this->_pushEvent($s);
-            $first = false;
-        }
+
         while($this->_mta($s) < $this->_mta($e)) {
             $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
             if ($this->byday) {
                 /**
                  * RRULE::BYDAY
                  */
-                if (!$first || in_array($strW, $this->byday)) {
+                if (!$this->first || in_array($strW, $this->byday)) {
                     $w = date('w', $this->_mta($s));
                     $day = $s['day'];
                     if ($w == 6) {
-                        $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
-                        if (in_array($strW, $this->byday)) {
-                            $this->_pushEvent($s);
-                        }
+                        $this->_pushByDayEvent($s);
                         $day++;
                         $w = 0;
                     }
-                    if ($w != 0 && !$first) {
+                    if ($w != 0 && !$this->first) {
                         //
                         // jpn:2週目からは日から土まで探索する
                         $day -= $w;
@@ -169,10 +169,7 @@ class Expander{
                     while($w < 6) {
                         $t = $s;
                         $t['day'] = $day;
-                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
-                        if (in_array($strW, $this->byday)) {
-                            $this->_pushEvent($t);
-                        }
+                        $this->_pushByDayEvent($t);
                         $day++;
                         $w = date('w', $this->_mta($t));
                     }
@@ -190,20 +187,14 @@ class Expander{
                     if ($w == 6) {
                         $t = $s;
                         $t['day'] = $day;
-                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
-                        if (in_array($strW, $this->byday)) {
-                            $this->_pushEvent($t);
-                        }
+                        $this->_pushByDayEvent($t);
                         $day++;
                         $w = 0;
                     }
                     while($w < 6) {
                         $t = $s;
                         $t['day'] = $day;
-                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
-                        if (in_array($strW, $this->byday)) {
-                            $this->_pushEvent($t);
-                        }
+                        $this->_pushByDayEvent($t);
                         $day++;
                         $w = date('w', $this->_mta($t));
                     }
@@ -212,15 +203,8 @@ class Expander{
                 $this->_pushEvent($s);
             }
             $s['day'] += 7 * $this->interval;
-            $first = false;
+            $this->first = false;
         }
-
-        if (!empty($this->count)) {
-            // @todo refactor code
-            $this->events = array_slice($this->events, 0, $this->count);
-        }
-
-        return $this->events;
     }
 
     /**
@@ -232,33 +216,22 @@ class Expander{
     private function _expandEventsMonthly(){
         $s = $this->expandStartPoint;
         $e = $this->expandEndPoint;
-        $first = true;
-        if ($this->_expandDate($this->eventStart) !== $s){
-            //
-            // jpn:表示範囲に最初の設定日が入っていない場合は$first = false
-            $first = false;
-        }
-        if ($this->_mta($s) === $this->_mta($e)) {
-            $this->_pushEvent($s);
-        }
+
         while($this->_mta($s) < $this->_mta($e)) {
             $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
             if ($this->byday) {
                 /**
                  * RRULE::BYDAY
                  */
-                if (!$first || in_array($strW, $this->byday)) {
+                if (!$this->first || in_array($strW, $this->byday)) {
                     $w = date('w', $this->_mta($s));
                     $day = $s['day'];
                     if ($w == 6) {
-                        $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
-                        if (in_array($strW, $this->byday)) {
-                            $this->_pushEvent($s);
-                        }
+                        $this->_pushByDayEvent($s);
                         $day++;
                         $w = 0;
                     }
-                    if ($w != 0 && !$first) {
+                    if ($w != 0 && !$this->first) {
                         //
                         // jpn:2週目からは日から土まで探索する
                         $day -= $w;
@@ -267,10 +240,7 @@ class Expander{
                     while($month == $s['month']) {
                         $t = $s;
                         $t['day'] = $day;
-                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
-                        if (in_array($strW, $this->byday)) {
-                            $this->_pushEvent($t);
-                        }
+                        $this->_pushByDayEvent($t);
                         $day++;
                         $w = date('w', $this->_mta($t));
                         $month = date('m', $this->_mta($t));
@@ -290,10 +260,7 @@ class Expander{
                     if ($w == 6) {
                         $t = $s;
                         $t['day'] = $day;
-                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
-                        if (in_array($strW, $this->byday)) {
-                            $this->_pushEvent($t);
-                        }
+                        $this->_pushByDayEvent($t);
                         $day++;
                         $w = 0;
                     }
@@ -301,10 +268,7 @@ class Expander{
                     while($month == $s['month']) {
                         $t = $s;
                         $t['day'] = $day;
-                        $strW = substr(strtoupper(date('D', $this->_mta($t))), 0, 2);
-                        if (in_array($strW, $this->byday)) {
-                            $this->_pushEvent($t);
-                        }
+                        $this->_pushByDayEvent($t);
                         $day++;
                         $w = date('w', $this->_mta($t));
                         $month = date('m', $this->_mta($t));
@@ -315,15 +279,8 @@ class Expander{
                 $this->_pushEvent($s);
             }
             $s['month'] += 1 * $this->interval;
-            $first = false;
+            $this->first = false;
         }
-
-        if (!empty($this->count)) {
-            // @todo refactor code
-            $this->events = array_slice($this->events, 0, $this->count);
-        }
-
-        return $this->events;
     }
 
     /**
@@ -336,15 +293,7 @@ class Expander{
     private function _expandEventsYearly(){
         $s = $this->expandStartPoint;
         $e = $this->expandEndPoint;
-        $first = true;
-        if ($this->_expandDate($this->eventStart) !== $s){
-            //
-            // jpn:表示範囲に最初の設定日が入っていない場合は$first = false
-            $first = false;
-        }
-        if ($this->_mta($s) === $this->_mta($e)) {
-            $this->_pushEvent($s);
-        }
+
         while($this->_mta($s) < $this->_mta($e)) {
             $year = $s['year'];
             $month = $s['month'];
@@ -352,10 +301,10 @@ class Expander{
                 /**
                  * RRULE::BYMONTH
                  */
-                if (!$first || in_array($month, $this->bymonth)) {
+                if (!$this->first || in_array($month, $this->bymonth)) {
                     $month = $s['month'];
                     $year = date('Y', $this->_mta($s));
-                    if ($month != 1 && !$first) {
+                    if ($month != 1 && !$this->first) {
                         //
                         // jpn:2周目からは1月から探索する
                         $month = 1;
@@ -369,10 +318,10 @@ class Expander{
                                 /**
                                  * RRULE::BYDAY
                                  */
-                                if (!$first || in_array($strW, $this->byday)) {
+                                if (!$this->first || in_array($strW, $this->byday)) {
                                     $w = date('w', $this->_mta($t));
                                     $day = $t['day'];
-                                    if (!$first) {
+                                    if (!$this->first) {
                                         //
                                         // jpn:2周目からは1日目から探索する
                                         $day = 1;
@@ -381,10 +330,7 @@ class Expander{
                                     while($tmonth == $t['month']) {
                                         $tt = $t;
                                         $tt['day'] = $day;
-                                        $strW = substr(strtoupper(date('D', $this->_mta($tt))), 0, 2);
-                                        if (in_array($strW, $this->byday)) {
-                                            $this->_pushEvent($tt);
-                                        }
+                                        $this->_pushByDayEvent($tt);
                                         $day++;
                                         $w = date('w', $this->_mta($tt));
                                         $tmonth = date('m', $this->_mta($tt));
@@ -396,9 +342,10 @@ class Expander{
                                 $this->_pushEvent($t);
                             }
                         }
+
                         $month++;
                         $year = date('Y', $this->_mta($t));
-                        $first = false;
+                        $this->first = false;
                     }
                 } else {
                     /**
@@ -417,7 +364,7 @@ class Expander{
                                  */
                                 $w = date('w', $this->_mta($t));
                                 $day = $t['day'];
-                                if (!$first) {
+                                if (!$this->first) {
                                     //
                                     // jpn:次月からは1日目から探索する
                                     $day = 1;
@@ -426,10 +373,7 @@ class Expander{
                                 while($tmonth == $t['month']) {
                                     $tt = $t;
                                     $tt['day'] = $day;
-                                    $strW = substr(strtoupper(date('D', $this->_mta($tt))), 0, 2);
-                                    if (in_array($strW, $this->byday)) {
-                                        $this->_pushEvent($tt);
-                                    }
+                                    $this->_pushByDayEvent($tt);
                                     $day++;
                                     $w = date('w', $this->_mta($tt));
                                     $tmonth = date('m', $this->_mta($tt));
@@ -440,7 +384,7 @@ class Expander{
                         }
                         $month++;
                         $year = date('Y', $this->_mta($t));
-                        $first = false;
+                        $this->first = false;
                     }
                 }
             } else {
@@ -448,15 +392,8 @@ class Expander{
             }
 
             $s['year'] += 1 * $this->interval;
-            $first = false;
+            $this->first = false;
         }
-
-        if (!empty($this->count)) {
-            // @todo refactor code
-            $this->events = array_slice($this->events, 0, $this->count);
-        }
-
-        return $this->events;
     }
 
     /**
@@ -507,6 +444,18 @@ class Expander{
     }
 
     /**
+     * _checkCount
+     *
+     * jpn: COUNT属性チェックする
+     */
+    function _checkCount(){
+        if (!empty($this->count)) {
+            // @todo refactor code
+            $this->events = array_slice($this->events, 0, $this->count);
+        }
+    }
+
+    /**
      * _pushEvent
      *
      * @param $events, $event, $s, $diff
@@ -518,6 +467,19 @@ class Expander{
         $event['Vevent']['event_end'] = date('Y-m-d H:i:s', $this->_mta($s) + $this->eventDiff);
         $this->events[] = $event;
         return $this->events;
+    }
+
+    /**
+     * _pushByDayEvent
+     *
+     * @param $s
+     * @return
+     */
+    function _pushByDayEvent($s){
+        $strW = substr(strtoupper(date('D', $this->_mta($s))), 0, 2);
+        if (in_array($strW, $this->byday)) {
+            $this->_pushEvent($s);
+        }
     }
 
     /**
