@@ -72,12 +72,6 @@ class CalendarValidationRuleBehavior extends ModelBehavior {
      */
     function checkByMonth(&$model, $fields){
         $bymonth = explode(',', array_shift($fields));
-        if (!empty($bymonth)
-            && (empty($model->data[$model->alias]['rrule_freq'])
-                || $model->data[$model->alias]['rrule_freq'] === 'daily'
-                || $model->data[$model->alias]['rrule_freq'] === 'monthly')) {
-            return false;
-        }
         foreach ($bymonth as $value) {
             if (!is_numeric($value)) {
                 return false;

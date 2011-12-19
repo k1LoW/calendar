@@ -14,6 +14,8 @@ class VeventPost extends CakeTestModel{
 class VeventTestCase extends CakeTestCase{
 
     public $fixtures = array('plugin.calendar.vevent');
+    public $allowTests = array('*');
+    // public $allowTests = array('VeventTestCase::test_RFC2445freqYearlyUntil');
 
     function startTest() {
         $this->Vevent = ClassRegistry::init('Calendar.Vevent');
@@ -31,6 +33,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:正常にイベントが登録できる
      */
     function test_setEvent(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 00:00:00',
                       'dtend' => '2011-11-15 00:00:00',
@@ -47,6 +52,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:正常にイベントが登録でき、登録したデータを取得できる
      */
     function test_setEventAndFindByUid(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 00:00:00',
                       'dtend' => '2011-11-15 00:00:00',
@@ -64,6 +72,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:正常にイベントが更新でき、登録したデータを取得できる
      */
     function test_setEventUpdateAndFindByUid(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 00:00:00',
                       'dtend' => '2011-11-15 00:00:00',
@@ -92,6 +103,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:足りないデータがある場合はエラー
      */
     function test_invalidData(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = 'invalid';
         $result = $this->Vevent->setEvent($data);
         $this->assertIdentical($result, false);
@@ -112,6 +126,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:イベント開始日と終了日の日付が不正の場合はエラー
      */
     function test_invalidDate(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-16 10:00:00',
                       'dtend' => '2011-11-15 10:00:00',
@@ -130,6 +147,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:rrule_freqが不正な場合はエラー
      */
     function test_invalidFreq(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 10:00:00',
@@ -148,6 +168,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:rrule_freqとrrule_untilは排他的
      */
     function test_invalidFreqAndUntil(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 10:00:00',
@@ -169,6 +192,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:rrule_bydayのチェック
      */
     function test_checkByDay(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 10:00:00',
@@ -250,13 +276,16 @@ class VeventTestCase extends CakeTestCase{
      * @return
      */
     function test_checkByMonth(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 10:00:00',
                       'summary' => 'rrule_frewがdaily',
                       'rrule_freq' => 'daily',
                       'rrule_count' => 10,
-                      'rrule_bymonth' => '2,4'
+                      'rrule_bymonth' => 'invalid'
                       );
         $result = $this->Vevent->setEvent($data);
         $expected = array('rrule_bymonth',
@@ -270,6 +299,9 @@ class VeventTestCase extends CakeTestCase{
      * @return
      */
     function test_checkByMonthDay(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 10:00:00',
@@ -315,6 +347,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_DropEvent(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 10:00:00',
@@ -335,7 +370,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:rrule_freq = 'daily'のときに正しくスケジュールが展開されること
      */
     function test_freqDailyCount10(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -365,7 +402,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqWeeklyCount5(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -395,7 +434,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqMonthlyCount3(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -428,7 +469,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqYearlyCount4(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -471,7 +514,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqDailyUntil(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -498,7 +543,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqWeeklyUntil(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -525,7 +572,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqYearlyUntil(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -563,7 +612,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:rrule_freq = 'daily'のときに正しくスケジュールが展開されること
      */
     function test_freqDailyCount5Interval2(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -591,7 +642,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqWeeklyCount2Interval3(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -621,7 +674,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqMonthlyCount3Interval2(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -652,7 +707,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqMonthlyCount3BydayWe(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-14 12:00:00',
@@ -677,7 +734,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqYearlyCount3Interval2(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-14 10:00:00',
                       'dtend' => '2011-11-15 12:00:00',
@@ -716,8 +775,10 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqWeeklyBydayMoFr(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $this->Vevent->dropEvent('xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
-
         $data = array(
                       'dtstart' => '2011-10-15 10:00:00',
                       'dtend' => '2011-10-15 12:00:00',
@@ -742,6 +803,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqYearlyBymonth(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-10-15 10:00:00',
                       'dtend' => '1997-10-15 12:00:00',
@@ -765,6 +829,9 @@ class VeventTestCase extends CakeTestCase{
      *
      */
     function test_freqYearlyBymonth1_3BydayWe(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-01-15 10:00:00',
                       'dtend' => '1997-01-15 12:00:00',
@@ -798,6 +865,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn: 最初の日付は条件に合致しなくても対象にする
      */
     function test_freqYearlyBymonth1_3BydayWeCount14(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-01-15 10:00:00',
                       'dtend' => '1997-01-15 12:00:00',
@@ -834,6 +904,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:終日判定
      */
     function test_dayLong(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-01',
                       'dtend' => '2011-11-02',
@@ -855,6 +928,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:終日チェック時に時間が00:00:00でない場合はfalse
      */
     function test_invalidDayLong(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '2011-11-01 00:10:00',
                       'dtend' => '2011-11-02 00:00:00',
@@ -873,6 +949,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:findByRange()で日付範囲分の配列が生成されること
      */
     function test_findByRange(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $result = $this->Vevent->findByRange('2011-11-01', '2011-11-10');
         $this->assertIdentical(count($result), 10);
     }
@@ -883,6 +962,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:findByRange()で日付範囲分の配列が生成され登録されているイベントがセットされていること
      */
     function test_findByRangeWithEvent(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $result = $this->Vevent->findByRange('2011-10-01', '2011-10-18');
         $this->assertIdentical(count($result), 18);
         $this->assertIdentical($result['2011-10-15'][0]['Vevent']['uid'], 'xxxxxxxx-xxxx-xxxx-xxxxxxxxxxx1');
@@ -902,7 +984,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:
      */
     function test_RFC2445freqDailyUntil(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -933,7 +1017,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:
      */
     function test_RFC2445freqDailyInterval(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -961,7 +1047,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:
      */
     function test_RFC2445freqDailyCount10(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -991,7 +1079,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:
      */
     function test_RFC2445freqDailyInterval10Count5(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -1025,6 +1115,25 @@ class VeventTestCase extends CakeTestCase{
      *    (2000 9:00 AM EDT)January 1-31
      */
     function test_RFC2445freqYearlyUntil(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
+        $data = array(
+                      'dtstart' => '1998-01-01 09:00:00',
+                      'dtend' => '1998-01-01 12:00:00',
+                      'summary' => 'RFC2445',
+                      'rrule_freq' => 'daily',
+                      'rrule_until' => '2000-01-31 09:00:00',
+                      'rrule_bymonth' => 1,
+                      );
+        $uid = $this->Vevent->setEvent($data);
+        $result = $this->Vevent->findByRange('1997-01-01', '2000-01-31');
+        $this->assertIdentical($result['1997-01-01'], array());
+        $this->assertIdentical($result['1998-01-01'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-02'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-03'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-01-31'][0]['Vevent']['uid'], $uid);
+        $this->assertIdentical($result['1998-02-01'], array());
     }
 
     /**
@@ -1038,6 +1147,9 @@ class VeventTestCase extends CakeTestCase{
      *   (1997 9:00 AM EST)October 28;November 4
      */
     function test_RFC2445freqWeeklyCount10() {
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -1073,6 +1185,9 @@ class VeventTestCase extends CakeTestCase{
      *                       December 2,9,16,23
      */
     function test_RFC2445freqWeeklyUntil1224() {
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -1106,7 +1221,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:
      */
     function test_RFC2445freqWeeklyInterval(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -1143,7 +1260,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:
      */
     function test_RFC2445freqWeeklyCount10Byday(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -1186,6 +1305,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:
      */
     function test_RFC2445freqWeeklyUntilByDay(){
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -1237,7 +1359,9 @@ class VeventTestCase extends CakeTestCase{
      * jpn:
      */
     function test_RFC2445freqWeeklyCount8Interval2ByDay(){
-
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -1390,6 +1514,9 @@ class VeventTestCase extends CakeTestCase{
      * ...
      */
     function test_RFC2445freqMonthlyInterval2BydayTu() {
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-09-02 09:00:00',
                       'dtend' => '1997-09-02 12:00:00',
@@ -1431,6 +1558,9 @@ class VeventTestCase extends CakeTestCase{
      * are specified, the day is gotten from DTSTART
      */
     function test_RFC2445freqYearlyCount10Bymonth6_7() {
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-06-10 09:00:00',
                       'dtend' => '1997-06-10 12:00:00',
@@ -1466,6 +1596,9 @@ class VeventTestCase extends CakeTestCase{
      *     (2003 9:00 AM EST)January 10;February 10;March 10
      */
     function test_RFC2445freqYearlyInterval2Count10Bymonth1_2_3() {
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
         $data = array(
                       'dtstart' => '1997-03-10 09:00:00',
                       'dtend' => '1997-03-10 12:00:00',
@@ -1551,7 +1684,10 @@ class VeventTestCase extends CakeTestCase{
      * ...
      */
     function test_RFC2445freqYearlyBymonthBydayTh() {
-         $data = array(
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
+        $data = array(
                       'dtstart' => '1997-03-13 09:00:00',
                       'dtend' => '1997-03-13 12:00:00',
                       'summary' => 'RFC2445',
@@ -1590,7 +1726,10 @@ class VeventTestCase extends CakeTestCase{
      * ...
      */
     function test_RFC2445freqYearlyBydaythBymonth6_7_8() {
-         $data = array(
+        if(!$this->_checkMethod(__METHOD__)) {
+            return;
+        }
+        $data = array(
                       'dtstart' => '1997-06-05 09:00:00',
                       'dtend' => '1997-06-05 12:00:00',
                       'summary' => 'RFC2445',
@@ -1689,7 +1828,7 @@ class VeventTestCase extends CakeTestCase{
      * RRULE:FREQ=MONTHLY;COUNT=3;BYDAY=TU,WE,TH;BYSETPOS=3
      * ==> (1997 9:00 AM EDT)September 4;October 7
      *     (1997 9:00 AM EST)November 6
-    */
+     */
     function test_RFC2445freqMonthlyCount3BydayTu_WeBysetpos3() {
     }
 
@@ -1704,7 +1843,7 @@ class VeventTestCase extends CakeTestCase{
      *     (1997 9:00 AM EST)October 30;November 27;December 30
      *     (1998 9:00 AM EST)January 29;February 26;March 30
      * ...
-    */
+     */
     function test_RFC2445freqMonthlyBydayMo_Tu_We_Th_FrBysetposMinus2() {
     }
 
@@ -1716,7 +1855,7 @@ class VeventTestCase extends CakeTestCase{
      * DTSTART;TZID=US-Eastern:19970902T090000
      * RRULE:FREQ=HOURLY;INTERVAL=3;UNTIL=19970902T170000Z
      * ==> (September 2, 1997 EDT)09:00,12:00,15:00
-    */
+     */
     function test_RFC2445freqHourlyInterval3Until() {
     }
 
@@ -1728,7 +1867,7 @@ class VeventTestCase extends CakeTestCase{
      * DTSTART;TZID=US-Eastern:19970902T090000
      * RRULE:FREQ=MINUTELY;INTERVAL=15;COUNT=6
      * ==> (September 2, 1997 EDT)09:00,09:15,09:30,09:45,10:00,10:15
-    */
+     */
     function test_RFC2445freqMinutelyInterval15Count6() {
     }
 
@@ -1740,7 +1879,7 @@ class VeventTestCase extends CakeTestCase{
      * DTSTART;TZID=US-Eastern:19970902T090000
      * RRULE:FREQ=MINUTELY;INTERVAL=90;COUNT=4
      * ==> (September 2, 1997 EDT)09:00,10:30;12:00;13:30
-    */
+     */
     function test_RFC2445freqMinutelyInterval90Count4() {
     }
 
@@ -1758,7 +1897,7 @@ class VeventTestCase extends CakeTestCase{
      *     (September 3, 1997 EDT)9:00,9:20,9:40,10:00,10:20,
      *     ...16:00,16:20,16:40
      * ...
-    */
+     */
     function test_RFC2445freqMinutelyInterval20Byhour9_10_11_12_13_14_15_16() {
     }
 
@@ -1771,7 +1910,7 @@ class VeventTestCase extends CakeTestCase{
      * DTSTART;TZID=US-Eastern:19970805T090000
      * RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=MO
      * ==> (1997 EDT)Aug 5,10,19,24
-    */
+     */
     function test_RFC2445freqWeeklyInterval2Count4BydayTu_SuWkstMo() {
     }
 
@@ -1783,8 +1922,21 @@ class VeventTestCase extends CakeTestCase{
      * DTSTART;TZID=US-Eastern:19970805T090000
      * RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=SU
      * ==> (1997 EDT)August 5,17,19,31
-    */
+     */
     function test_RFC2445freqWeeklyInterval2Count4BydayTu_SuWkstSu() {
     }
 
+    /**
+     * _checkMethod
+     * for test
+     *
+     * @param $method
+     * @return
+     */
+    function _checkMethod($method){
+        if (in_array($method, $this->allowTests) || in_array('*', $this->allowTests)) {
+            return true;
+        }
+        return false;
+    }
 }

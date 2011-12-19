@@ -40,6 +40,11 @@ class Expander{
         $this->until = empty($event['Vevent']['rrule_until']) ? null : $event['Vevent']['rrule_until'];
         $this->byday = empty($event['Vevent']['rrule_byday']) ? null : explode(',', $event['Vevent']['rrule_byday']);
         $this->bymonth = empty($event['Vevent']['rrule_bymonth']) ? null : explode(',', $event['Vevent']['rrule_bymonth']);
+        if (!empty($this->bymonth)) {
+            foreach ($this->bymonth as $key => $value) {
+                $this->bymonth[$key] = sprintf('%02d', $value);
+            }
+        }
         $this->bymonthday = empty($event['Vevent']['rrule_bymonthday']) ? null : explode(',', $event['Vevent']['rrule_bymonthday']);
         $this->interval = empty($event['Vevent']['rrule_interval']) ? 1 : $event['Vevent']['rrule_interval']; // INTERVAL
 
@@ -132,7 +137,14 @@ class Expander{
         $e = $this->expandEndPoint;
 
         while($this->_mta($s) < $this->_mta($e)) {
-            $this->_pushEvent($s);
+            if ($this->bymonth) {
+                $month = date('m', $this->_mta($s));
+                if (in_array($month, $this->bymonth)) {
+                    $this->_pushEvent($s);
+                }
+            } else {
+                $this->_pushEvent($s);
+            }
             $s['day'] += 1 * $this->interval;
         }
     }
@@ -413,6 +425,9 @@ class Expander{
         if (empty($event['Vevent'])) {
             $event = array('Vevent' => $event);
         }
+        if ($daydiff === 0) {
+            $evants = array($event);
+        }
         for ($i = 0; $i <= $daydiff; $i++) {
             $key = date('Y-m-d', mktime(0, 0, 0, $startDate['month'], ($startDate['day'] + $i), $startDate['year']));
             if ($event) {
@@ -536,7 +551,7 @@ class Expander{
     /**
      * mergeEvents
      *
-     * @param $arg
+     * @param $events1, $events2
      * @return
      */
     public static function mergeEvents($events1, $events2){

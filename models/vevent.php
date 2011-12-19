@@ -211,7 +211,6 @@ class Vevent extends CalendarAppModel {
                                                    array('Vevent.rrule_freq' => '')));
         $query['order'] = array('Vevent.dtstart');
         $result = $this->find('all', $query);
-
         foreach ($result as $event) {
             $event['Vevent']['event_start'] = $event['Vevent']['dtstart'];
             $event['Vevent']['event_end'] = $event['Vevent']['dtend'];
@@ -248,11 +247,9 @@ class Vevent extends CalendarAppModel {
                 if (strtotime($eventEnd) > strtotime($end)) {
                     $eventEnd = $end;
                 }
-
                 $events = Expander::mergeEvents($events, Expander::expandEvent($eventStart, $eventEnd, $ee));
             }
         }
-
         return $events;
     }
 
